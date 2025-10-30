@@ -3,8 +3,8 @@ let canvas = document.querySelector('canvas');
     const Width = window.innerWidth;
     const Height = window.innerHeight;
 
-    canvas.width = Width;
-    canvas.height = Height;
+    canvas.width = Width * 0.95;
+    canvas.height = Height * 0.95;
 
     let ctx = canvas.getContext('2d');
 
@@ -64,7 +64,7 @@ let canvas = document.querySelector('canvas');
             this.angle = angle;
         }
 
-        Draw(){
+        DrawCS(){
             ctx.beginPath();
             ctx.strokeStyle = "red";
             ctx.moveTo(this.origin_x,this.origin_y);
@@ -80,6 +80,88 @@ let canvas = document.querySelector('canvas');
             ctx.closePath();
         }
 
+        DrawCSWithDivision(numberOfDiv){
+            ctx.beginPath();
+            ctx.strokeStyle = "red";
+            ctx.moveTo(this.origin_x,this.origin_y);
+            let ToX = 0;
+            let ToY = 0;
+
+            //X axis
+            for(let i = 0;i < numberOfDiv; i++){
+                ToX += Math.cos(ConvertAngle(-this.angle)) * 50;
+                ToY += Math.sin(ConvertAngle(-this.angle)) *  50;
+                ctx.lineTo(this.origin_x + ToX,this.origin_y +  ToY);
+
+                let DivFromCoords = this.#GetDivCoords(90);
+
+                ctx.moveTo(this.origin_x + ToX + DivFromCoords[0],this.origin_y +  ToY + DivFromCoords[1]);
+                
+                let DivToCoords = this.#GetDivCoords(-90);
+
+                ctx.lineTo(this.origin_x + ToX + DivToCoords[0], this.origin_y +  ToY + DivToCoords[1]);
+                
+                let TextX = this.origin_x + ToX + (DivFromCoords[0] - DivToCoords[0]) / 10 * 20 - 5;
+                let TextY = this.origin_y + ToY + (DivFromCoords[1] - DivToCoords[1]) / 10 * 20 + 5;
+                
+                this.#DrawText(`${i + 1}`,TextX,TextY,"20px Arial");
+
+                ctx.moveTo(this.origin_x + ToX,this.origin_y +  ToY);
+
+
+            }
+
+            ctx.stroke();
+            ctx.closePath();
+
+
+
+            ctx.beginPath();
+            ctx.strokeStyle = "green";
+            ctx.moveTo(this.origin_x,this.origin_y);
+            ToX = 0;
+            ToY = 0;
+
+            //Y Axis
+            for(let i = 0;i < numberOfDiv; i++){
+                ToX += Math.sin(ConvertAngle(-this.angle)) * 50;
+                ToY += Math.cos(ConvertAngle(-this.angle)) *  50;
+                ctx.lineTo(this.origin_x + ToX,this.origin_y -  ToY);
+
+                let DivFromCoords = this.#GetDivCoords(90);
+
+                ctx.moveTo(this.origin_x + ToX + DivFromCoords[1],this.origin_y -  ToY - DivFromCoords[0]);
+                
+                let DivToCoords = this.#GetDivCoords(-90);
+
+                ctx.lineTo(this.origin_x + ToX + DivToCoords[1], this.origin_y -  ToY - DivToCoords[0]);
+            
+
+                let TextX = this.origin_x + ToX + (DivToCoords[1] - DivFromCoords[1]) / 10 * 20 - 5;
+                let TextY = this.origin_y - ToY - (DivToCoords[0] - DivFromCoords[0]) / 10 * 20 + 5;
+                
+                this.#DrawText(`${i + 1}`,TextX,TextY,"20px Arial");
+                
+                ctx.moveTo(this.origin_x + ToX,this.origin_y -  ToY);
+
+            }
+
+            ctx.stroke();
+            ctx.closePath();
+
+        }
+
+        #GetDivCoords(angle){
+            return [
+                Math.cos(ConvertAngle(-this.angle + angle)) * 5,
+                Math.sin(ConvertAngle(-this.angle + angle)) * 5
+            ]
+        }
+
+        #DrawText(text,posx,posy,Font){
+            ctx.font = Font;
+            ctx.fillText(text,posx,posy);
+        }
 
     } 
 
@@ -146,10 +228,10 @@ let canvas = document.querySelector('canvas');
 
             this.Angle %= 360;
 
-            if(this.Angle > this.Max_Angle)
-                this.Angle = this.Max_Angle;
-            else if (this.Angle < this.Min_Angle)
-                this.Angle = this.Min_Angle;
+            // if(this.Angle > this.Max_Angle)
+            //     this.Angle = this.Max_Angle;
+            // else if (this.Angle < this.Min_Angle)
+            //     this.Angle = this.Min_Angle;
             this.UpdateSegments();
         }
         SetMaxAngle(){
@@ -293,7 +375,7 @@ let canvas = document.querySelector('canvas');
                     
                     
                     if(this.Segments[Level].NextSegment != null){
-                        this.DrawWorkingArea(Level + 1,MinLevel,i);
+                        this.DrawWorkingArea(Level + 1,MinLevel,i); 
                     }
                     this.Segments[Level].DrawOwnArea(); 
 
@@ -310,16 +392,18 @@ let canvas = document.querySelector('canvas');
     }
 
     CS = new Coordinate_System(Width / 2,Height / 2,0);
-    CS.Draw();
-
+    CS.DrawCS();
+    
     let Segment1 = new Robot_Segment(CS,First_Length, First_Min_Angle, First_Min_Angle,First_Max_Angle);
     let Segment2 = new Robot_Segment(CS,Second_Length, Second_Min_Angle, Second_Min_Angle,Second_Max_Angle);
     Segment1.SetNextSegment(Segment2);
     Segment2.SetPrevSegment(Segment1);
 
-    Segment1.CS.Draw();
+    Segment1.CS.DrawCS();
+    Segment1.CS.DrawCSWithDivision(4);
     Segment1.Draw();
-    Segment2.CS.Draw();
+    Segment2.CS.DrawCS();
+    Segment2.CS.DrawCSWithDivision(2);
     Segment2.Draw();
 
     Arm = new Robot_Arm(CS);
@@ -332,7 +416,7 @@ let canvas = document.querySelector('canvas');
             
             Segment1.RotateAroundOrigin((First_Max_Angle - First_Min_Angle) / 10);
             Segment2.RotateAroundOrigin((Second_Max_Angle - Second_Min_Angle) / 10);
-            console.log(Segment1.Angle)
+            //console.log(Segment1.Angle)
         }
         else if(e.deltaY > 0){
             
@@ -341,16 +425,17 @@ let canvas = document.querySelector('canvas');
         }
         
         ClearScreen();
-        Segment1.CS.Draw();
+        Segment1.CS.DrawCS();
         Segment1.Draw();
-        Segment2.CS.Draw();
+        Segment1.CS.DrawCSWithDivision(4);
+
+        Segment2.CS.DrawCS();
         Segment2.Draw();
+        Segment2.CS.DrawCSWithDivision(2);
 
         Arm.DrawWorkingArea(0);
     });
 
-
-    
     
 
     
