@@ -1,18 +1,4 @@
-ConvertAngle = (Angle) => {
-    return Angle / 180 * Math.PI;
-}
 
-DrawArc = (posX,posY,Rad,StartAng,EndAng,clockWise) =>{
-    ctx.beginPath();
-    ctx.strokeStyle = "red";
-    ctx.fillStyle = "rgba(255,0,0,0.5)" ;
-    StartAng %= 360;
-    EndAng %= 360;
-    ctx.arc(posX,posY,Rad,ConvertAngle(StartAng),ConvertAngle(EndAng),clockWise);
-    //ctx.fill();
-    ctx.stroke();
-    ctx.closePath();
-}
 
 class Robot_Segment{
             
@@ -124,6 +110,8 @@ class Robot_Segment{
                 let StartAngle = (Angle + (this.Angle - this.Min_Angle))
                 let EndAngle = (Angle - this.Max_Angle + (this.Angle))
                 
+                //console.log(StartAngle,EndAngle,Angle);
+
                 DrawArc(this.CS.origin_x,this.CS.origin_y,Dist,StartAngle,EndAngle,true);
             }
         }
@@ -146,30 +134,6 @@ class Robot_Segment{
                     return this.GetSegmentEndPositionGlobal();
             }
         }
-        // GetNextXSegmentAngleSumGlobal(depth){
-        //     let sum = 0;
-        //     if(depth != null){
-        //         if(depth == 0){
-        //             sum += this.CS.angle + this.Angle;
-        //             return sum;
-        //         }
-        //         if(depth > 0 && this.NextSegment != null){
-        //             sum += this.NextSegment.GetNextXSegmentAngleSumGlobal(depth - 1);
-        //             sum += this.CS.angle;
-        //             return sum;
-        //         }
-        //     }
-        //     else{
-        //         if(this.NextSegment != null){
-        //             sum += this.NextSegment.GetNextXSegmentAngleSumGlobal();
-        //             sum += this.CS.angle;
-        //             return sum;
-        //         }
-        //         else{
-        //             sum += this.CS.angle + this.Angle;
-        //             return sum;
-        //         }
-        //     }
-        // }
+        
 
     }
