@@ -2,6 +2,7 @@ class Robot_Arm{
         constructor(CS){
             this.CS = CS;
             this.Segments = new Array();
+            this.Points = new Array();
         }
         SaveSegmentsAngles(Level,arr){
             if(Level == null)
@@ -46,21 +47,28 @@ class Robot_Arm{
                 //I knew the answer a long time ago
                 //I just didn't watn to accept it as a solution
                 //Bad thinking
-                
-                for(let i = 0; i < 2 ; i++){
-                    if((Level + i + state) % 2 == 0)
-                        this.Segments[Level].SetMaxAngle();
-                        //this.Segments[Level].RotateAroundOrigin(this.Segments[Level].Max_Angle - this.Segments[Level].Min_Angle);
-                    else
-                        this.Segments[Level].SetMinAngle();
-                        //this.Segments[Level].RotateAroundOrigin(this.Segments[Level].Max_Angle - this.Segments[Level].Min_Angle,true);
-                    
-                    
-                    if(this.Segments[Level].NextSegment != null){
+                if(this.Segments[Level].NextSegment != null){
+                    for(let i = 0; i < 2 ; i++){
+                        if((Level + i + state) % 2 == 0)
+                            this.Segments[Level].SetMinAngle();
+                            //this.Segments[Level].RotateAroundOrigin(this.Segments[Level].Max_Angle - this.Segments[Level].Min_Angle);
+                        else
+                            this.Segments[Level].SetMaxAngle();
+                            //this.Segments[Level].RotateAroundOrigin(this.Segments[Level].Max_Angle - this.Segments[Level].Min_Angle,true);
+                        
                         this.DrawWorkingArea(Level + 1,MinLevel,i); 
+                        
+                        this.Segments[Level].DrawOwnArea(); 
+    
                     }
-                    this.Segments[Level].DrawOwnArea(); 
+                }
+                else{
+                    if((Level + state) % 2 == 0)
+                        this.Segments[Level].SetMinAngle();
+                    else
+                        this.Segments[Level].SetMaxAngle();
 
+                    this.Segments[Level].DrawOwnArea(); 
                 }
                 
             }
@@ -95,11 +103,9 @@ class Robot_Arm{
                     
                     if(this.Segments[Level].NextSegment != null){
                         AreaEndCoords = AreaEndCoords.concat(this.#GetWorkingAreaEndCoords(Level + 1,MinLevel,i)); 
-                        
                     }
                     else{
                         AreaEndCoords.push(this.Segments[Level].GetSegmentEndPositionGlobal());
-                        
                     }
 
                 }
@@ -120,8 +126,26 @@ class Robot_Arm{
                 Pt.Draw((320 / arr.length) * (i));
             }
         }
-        SetPointsToMoveBetween(){
+        SetPointsToMoveBetween(posx,posy){
+            let res = this.CheckIfPointIsInSideWorkingArea(0,null,null,posx,posy);
+            if(res % 2 == 1){
+                this.Points.push(new Point(posx,posy,5,'X'));
 
+                for(let i = 0; i < this.Points.length - 1; i++){
+                ctx.beginPath();
+                ctx.strokeStyle = "black";
+                ctx.setLineDash([10,10]);
+                ctx.moveTo(this.Points[i].posx,this.Points[i].posy);
+                ctx.lineTo(this.Points[i + 1].posx,this.Points[i + 1].posy)
+                ctx.stroke();
+                ctx.closePath();
+    
+                this.Points[i].Draw();
+
+                }
+                if(this.Points.length > 0)
+                    this.Points[this.Points.length - 1].Draw();  
+            }
         }
         CheckIfPointIsInSideWorkingArea(Level,MinLevel,state,posx,posy){
             let Intersections = 0;
@@ -137,16 +161,35 @@ class Robot_Arm{
                 
             }
             if(Level >= 0 && Level < this.Segments.length){
-               
-                for(let i = 0; i < 2 ; i++){
-                    if((Level + i + state) % 2 == 0)
+                if(this.Segments[Level].NextSegment != null){
+                    for(let i = 0; i < 2 ; i++){
+                        if((Level + i + state) % 2 == 0)
+                            this.Segments[Level].SetMinAngle();
+                        else
+                            this.Segments[Level].SetMaxAngle();
+                            
+                        if(this.Segments[Level].NextSegment != null){
+                            Intersections += this.CheckIfPointIsInSideWorkingArea(Level + 1,MinLevel,i,posx,posy); 
+                        }
+                        //Start from the left upper corner
+                        let SegEndPos = this.Segments[Level].GetNextXSegmentPos();
+                        let Origin = this.Segments[Level].GetOrigins();
+                        let diffX = SegEndPos[0] - Origin[0];
+                        let diffY = SegEndPos[1] - Origin[1];
+                        let Rad = Math.sqrt(diffX**2 + diffY**2);
+                        let Angle = Math.atan2(diffY, diffX) / Math.PI * 180;
+                        
+                        let StartAngle = (Angle + (this.Segments[Level].Angle - this.Segments[Level].Min_Angle));
+                        let EndAngle = (Angle - this.Segments[Level].Max_Angle + this.Segments[Level].Angle);
+    
+                        //console.log(SegEndPos,Origin,diffX,diffY,Rad,Angle);
+                        Intersections += this.CheckIfLineIntersectsArc([0,0],[posx,posy],Origin,Rad,StartAngle,EndAngle);
+                    }
+                }else{
+                    if((Level +  state) % 2 == 0)
                         this.Segments[Level].SetMaxAngle();
                     else
                         this.Segments[Level].SetMinAngle();
-                        
-                    if(this.Segments[Level].NextSegment != null){
-                        Intersections += this.CheckIfPointIsInSideWorkingArea(Level + 1,MinLevel,i,posx,posy); 
-                    }
                     //Start from the left upper corner
                     let SegEndPos = this.Segments[Level].GetNextXSegmentPos();
                     let Origin = this.Segments[Level].GetOrigins();
@@ -197,12 +240,9 @@ class Robot_Arm{
             let t1 = (-(2 * (SE[0] * CS[0] + SE[1]*CS[1])) - Math.sqrt(discr)) / (2 * (SE[0]**2 + SE[1]**2));
             let t2 = (-(2 * (SE[0] * CS[0] + SE[1]*CS[1])) + Math.sqrt(discr)) / (2 * (SE[0]**2 + SE[1]**2));
             
-            // StartAng = KeepAngleInWorkingRange(StartAng);
-            // EndAng = KeepAngleInWorkingRange(EndAng);
-
-            //Do properly calculate with the angles
+            //To properly calculate with the angles
             //they need to be multiplied by -1
-            
+
             StartAng *= (-1);
             EndAng *= (-1);
 
@@ -215,10 +255,8 @@ class Robot_Arm{
                 let Ang1 = Math.atan2(Y1 - CircleC[1], X1 - CircleC[0]);
                 Ang1 = (Ang1  / Math.PI * 180 );
 
-                Ang1 = KeepAngleInWorkingRange(Ang1);
+                Ang1 *= (-1);
 
-                //console.log(StartAng,EndAng, Ang1);
-                    
                 if(Ang1  > StartAng  && Ang1  < EndAng ){
                     Intersections += 1;
                 }      
@@ -231,15 +269,12 @@ class Robot_Arm{
                 let Ang2 = Math.atan2(Y2 - CircleC[1], X2 - CircleC[0]);
                 Ang2 = (Ang2  / Math.PI * 180 );
 
-                Ang2 = KeepAngleInWorkingRange(Ang2);
-
-                //console.log(StartAng,EndAng,Ang2);
+                Ang2 *= (-1) ;
 
                 if(Ang2 > StartAng  && Ang2 < EndAng){
                     Intersections += 1;
                 }  
             }
-            //console.log(Intersections);
             return Intersections;
         }
 

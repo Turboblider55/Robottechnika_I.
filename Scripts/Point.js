@@ -8,6 +8,7 @@ class Point{
 
     Draw(Color){
         ctx.beginPath();
+        ctx.setLineDash([]);
         ctx.strokeStyle = `hsl(${Color},100%,50%)`;
         ctx.fillStyle = `hsla(${Color},100%,50%,0.5)`;
         ctx.arc(this.posx,this.posy,this.rad,0,Math.PI * 2);

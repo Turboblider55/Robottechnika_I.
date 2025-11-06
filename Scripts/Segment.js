@@ -97,7 +97,7 @@ class Robot_Segment{
         }
         DrawOwnArea(){
             if(this.NextSegment == null)
-                DrawArc(this.CS.origin_x,this.CS.origin_y,this.Length * this.Scale,-(this.CS.angle + this.Max_Angle),-(this.CS.angle + this.Min_Angle),false);
+                DrawArc(this.CS.origin_x,this.CS.origin_y,this.Length * this.Scale,-(this.CS.angle + this.Max_Angle),-(this.CS.angle + this.Min_Angle),false,[5,5]);
             else{
                 let EndPos = this.GetNextXSegmentPos();
                 let DistX = this.CS.origin_x - EndPos[0];
@@ -112,7 +112,7 @@ class Robot_Segment{
                 
                 //console.log(StartAngle,EndAngle,Angle);
 
-                DrawArc(this.CS.origin_x,this.CS.origin_y,Dist,StartAngle,EndAngle,true);
+                DrawArc(this.CS.origin_x,this.CS.origin_y,Dist,StartAngle,EndAngle,true,[5,5]);
             }
         }
         GetNextXSegmentPos(depth){

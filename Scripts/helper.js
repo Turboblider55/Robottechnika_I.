@@ -9,10 +9,11 @@ ConvertAngle = (Angle) => {
 return Angle / 180 * Math.PI;
 }
 
-DrawArc = (posX,posY,Rad,StartAng,EndAng,clockWise) =>{
+DrawArc = (posX,posY,Rad,StartAng,EndAng,clockWise,pattern = []) =>{
     ctx.beginPath();
+    ctx.setLineDash(pattern);
     ctx.strokeStyle = "red";
-    ctx.fillStyle = "rgba(255,0,0,0.5)" ;
+    ctx.fillStyle = "rgba(255,0,0,0.5)";
     StartAng %= 360;
     EndAng %= 360;
     if(StartAng <= EndAng)
@@ -20,13 +21,7 @@ DrawArc = (posX,posY,Rad,StartAng,EndAng,clockWise) =>{
     else
         ctx.arc(posX,posY,Rad,ConvertAngle(EndAng),ConvertAngle(StartAng),!clockWise);
     ctx.stroke();
-    ctx.closePath();
-}
-KeepAngleInWorkingRange= (angle) =>{
-    angle %= 360;
 
-    if(angle <= 0)
-        return (angle * (-1));
-    else
-        return (angle + 180);
+    ctx.setLineDash([]);
+    ctx.closePath();
 }
