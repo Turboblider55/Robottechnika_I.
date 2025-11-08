@@ -1,0 +1,42 @@
+body{
+        margin: 0px;
+        padding: 0px;
+    }
+    canvas{
+        top: 0px;
+        left: 0px;
+        position: absolute;
+        z-index: -1;
+    }
+    #Variables{
+        left: 0px;
+        top: 0px;
+        position: absolute;
+        z-index: 1;
+    }
+    td,th{
+        border: 1px solid black;
+    }
+    input[type="text"]{
+        
+        min-width: 25px;
+        max-width: 50px;
+        font-weight: bold;
+    }
+    input:hover{
+        background-color: rgba(0,0,0,0.1);
+    }
+    #Buttons{
+        top: 100px;
+        position: absolute;
+        vertical-align: bottom;
+        margin: 5px;
+        z-index: 0;
+    }
+    #Buttons td {
+        padding: 5px;
+    }
+    .containter{
+        width: 100%;
+        height: 100%;
+    }

@@ -25,3 +25,21 @@ DrawArc = (posX,posY,Rad,StartAng,EndAng,clockWise,pattern = []) =>{
     ctx.setLineDash([]);
     ctx.closePath();
 }
+
+//This function is for the result angle from the atan2 function
+ConvertAngleToRightRange = (angle) => {
+    if(angle < 0)
+        angle *= (-1);
+    else
+        angle = 180 + (180 - angle);
+
+    return angle;
+}
+
+GenerateTableContent = (SegmentData) => {
+    let td = document.createElement("td");
+    let div = document.createElement("div");
+    div.classList.add("container");
+    td.append(div);
+    console.log(td);
+}

@@ -10,13 +10,16 @@ class Robot_Segment{
             this.Max_Angle = Max_Angle;
             this.PrevSegment = null;
             this.NextSegment = null;
+            this.Text = null;
             this.Scale = 100;
         }
 
         SetScale(scale){
             this.Scale = scale;
         }
-
+        SetText(Text){
+            this.Text = Text;
+        }
         GetOrigins= () =>{
             return [this.CS.origin_x,this.CS.origin_y];
         }
@@ -75,6 +78,18 @@ class Robot_Segment{
 
             this.UpdateSegments();
         }
+        SetAngle = (Angle) =>{
+            this.Angle = Angle;
+
+            this.Angle %= 360;
+
+            if(this.Angle > this.Max_Angle)
+                this.Angle = this.Max_Angle;
+            else if (this.Angle < this.Min_Angle)
+                this.Angle = this.Min_Angle;
+
+            this.UpdateSegments();
+        }
         SetMaxAngle(){
             this.Angle = this.Max_Angle;
             this.UpdateSegments();
@@ -88,10 +103,12 @@ class Robot_Segment{
                 let EndPos = this.GetSegmentEndPositionGlobal();
                 this.NextSegment.CS.origin_x = EndPos[0];
                 this.NextSegment.CS.origin_y = EndPos[1];
+
                 if(this.PrevSegment != null)
                     this.NextSegment.CS.angle = this.Angle + this.CS.angle + 180;
                 else
                     this.NextSegment.CS.angle = this.Angle +  180;
+
                 this.NextSegment.UpdateSegments();
             }
         }
@@ -133,6 +150,31 @@ class Robot_Segment{
                 else 
                     return this.GetSegmentEndPositionGlobal();
             }
+        }
+
+        DrawText(){
+            let EndPos = this.GetSegmentEndPositionGlobal()
+            let Origins = this.GetOrigins();
+
+            // let Pt = new Point(EndPos[0],EndPos[1],10,'EndP');
+            // Pt.Draw();
+
+            //console.log(this.CS.origin_x,this.CS.origin_y, this.CS.angle);
+
+            let SegCenterX = (EndPos[0] - Origins[0]) / 2;
+            let SegCenterY = (EndPos[1] - Origins[1]) / 2;
+
+            //console.log(SegCenterX,SegCenterY,Math.sqrt(SegCenterX**2 + SegCenterY**2));
+            
+            SegCenterX -= Math.cos(ConvertAngle(this.CS.angle + this.Angle)) * 10 - 5;
+            SegCenterY -= Math.sin(ConvertAngle(this.CS.angle + this.Angle)) * 10 + 5;
+
+            ctx.beginPath();
+            ctx.fillStyle  = "black";
+            ctx.Font = "20px Arial";
+            let HalfTextWidth = ctx.measureText(this.Text).width / 2;
+            ctx.fillText(this.Text,Origins[0] + SegCenterX ,Origins[1] + SegCenterY);
+            ctx.closePath();
         }
         
 
