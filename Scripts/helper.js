@@ -12,8 +12,7 @@ return Angle / 180 * Math.PI;
 DrawArc = (posX,posY,Rad,StartAng,EndAng,clockWise,pattern = []) =>{
     ctx.beginPath();
     ctx.setLineDash(pattern);
-    ctx.strokeStyle = "red";
-    ctx.fillStyle = "rgba(255,0,0,0.5)";
+    ctx.strokeStyle = "rgba(255,0,0,0.8)";
     StartAng %= 360;
     EndAng %= 360;
     if(StartAng <= EndAng)

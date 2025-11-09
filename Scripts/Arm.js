@@ -24,6 +24,7 @@ class Robot_Arm{
                 return;
 
             this.Segments[Level].Angle = arr[Level-MinLevel];
+            this.Segments[Level].UpdateSegments();
             //console.log("Segment Angle Loaded");
             if(this.Segments[Level].NextSegment != null && Level < this.Segments.length){
                 this.LoadSegmentsAngles(Level + 1,MinLevel, arr);
@@ -35,9 +36,9 @@ class Robot_Arm{
             })
         }
         DrawBigCS(){
-            this.Segments.forEach(Segment=>{
-                Segment.CS.DrawCSWithDivision( Math.ceil(Segment.Length));
-            })
+            for(let i = 1; i < this.Segments.length;i++){
+                this.Segments[i].CS.DrawCSWithDivision( Math.ceil(this.Segments[i].Length));
+            }
         }
         DrawRobotCS(){
             let SegLenTotal = 0;
@@ -57,7 +58,7 @@ class Robot_Arm{
             });
         }
         DrawArmAngles(){
-            for(let i = 0; i < this.Segments.length -1;i ++){
+            for(let i = 0; i < this.Segments.length ;i ++){
                 this.Segments[i].DrawAngle(i * (320 / this.Segments.length));
             }
         }
@@ -156,28 +157,29 @@ class Robot_Arm{
             }
         }
         SetPointsToMoveBetween(posx,posy){
-            let res = this.CheckIfPointIsInSideWorkingArea(0,null,null,posx,posy);
+            let res = this.CheckIfPointIsInSideWorkingArea(0,null,null,0,0,posx,posy);
             console.log(res);
             if(res % 2 == 1){
                 this.Points.push(new Point(posx,posy,5,'X'));
-
-                for(let i = 0; i < this.Points.length; i++){
+            }
+        }
+        DrawPointsToMoveBetween(){
+            for(let i = 0; i < this.Points.length - 1; i++){
                 ctx.beginPath();
                 ctx.strokeStyle = "black";
                 ctx.setLineDash([10,10]);
                 ctx.moveTo(this.Points[i].posx,this.Points[i].posy);
-                ctx.lineTo(this.Points[i + 1].posx,this.Points[i + 1].posy)
+                ctx.lineTo(this.Points[i + 1].posx,this.Points[i + 1].posy);
                 ctx.stroke();
+                ctx.setLineDash([]);
                 ctx.closePath();
     
                 this.Points[i].Draw();
-
-                }
-                if(this.Points.length > 0)
-                    this.Points[this.Points.length - 1].Draw();  
             }
+            if(this.Points.length > 0)
+                this.Points[this.Points.length - 1].Draw();  
         }
-        CheckIfPointIsInSideWorkingArea(Level,MinLevel,state,posx,posy){
+        CheckIfPointIsInSideWorkingArea(Level,MinLevel,state,StartPosX,StartPosY,EndPosX,EndPosY){
             let Intersections = 0;
             let SegmentsAngles = [];
             if(MinLevel == null){
@@ -199,7 +201,7 @@ class Robot_Arm{
                             this.Segments[Level].SetMinAngle();
                             
                         
-                        Intersections += this.CheckIfPointIsInSideWorkingArea(Level + 1,MinLevel,i,posx,posy); 
+                        Intersections += this.CheckIfPointIsInSideWorkingArea(Level + 1,MinLevel,i,StartPosX,StartPosY,EndPosX,EndPosY); 
                         
                         //Start from the left upper corner
                         let SegEndPos = this.Segments[Level].GetNextXSegmentPos();
@@ -215,7 +217,7 @@ class Robot_Arm{
                         //console.log(StartAngle,EndAngle);
 
                         //console.log(SegEndPos,Origin,diffX,diffY,Rad,Angle);
-                        Intersections += this.CheckIfLineIntersectsArc([0,0],[posx,posy],Origin,Rad,StartAngle,EndAngle);
+                        Intersections += this.CheckIfLineIntersectsArc([StartPosX,StartPosY],[EndPosX,EndPosY],Origin,Rad,StartAngle,EndAngle);
                     }
                 }
                 else{
@@ -238,7 +240,7 @@ class Robot_Arm{
                     //console.log(StartAngle,EndAngle)
 
                     //console.log(SegEndPos,Origin,diffX,diffY,Rad,Angle);
-                    Intersections += this.CheckIfLineIntersectsArc([0,0],[posx,posy],Origin,Rad,StartAngle,EndAngle);
+                    Intersections += this.CheckIfLineIntersectsArc([StartPosX,StartPosY],[EndPosX,EndPosY],Origin,Rad,StartAngle,EndAngle);
                 }
                 
             }
@@ -282,6 +284,7 @@ class Robot_Arm{
                 StartAng -= Math.sign(StartAng)*(Math.abs(StartAng) - 180) * 2;
                 StartAng *= (-1);
             }
+
             if(Math.abs(EndAng) > 180){
                 EndAng -= Math.sign(EndAng)*(Math.abs(EndAng) - 180) * 2;
                 EndAng *= (-1);

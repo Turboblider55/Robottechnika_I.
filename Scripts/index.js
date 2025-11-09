@@ -12,14 +12,14 @@ let canvas = document.querySelector('canvas');
     Origin_y = Height / 2 ;
 
     //Konstansok
-    const First_Length = 1.2;
-    const First_Min_Angle = 25;
-    const First_Max_Angle = 90;
-    const Second_Length = 0.9;
-    const Second_Min_Angle = 45;
-    const Second_Max_Angle = 135;
     //L3 , L4 , 32Min , 32Max , 43Min , 43 Max , tgy , v
     let RobotInfo = [1.2,0.9,25,90,45,135,0.5,1.2];
+
+    //A string of numbers relared to the checkboxes
+    let DrawList = ""
+
+    let SettingPoints = false;
+    let PointStaysInside = true;
 
     let CS = new Coordinate_System(Width / 2,Height / 2,0);
     CS.DrawCS();
@@ -35,13 +35,6 @@ let canvas = document.querySelector('canvas');
     Arm.Segments[0] = Segment1;
     Arm.Segments[1] = Segment2;
     //Arm.Segments[2] = Segment3;
-
-    Arm.DrawWorkingArea(0);
-    Arm.DrawAreaEnds();
-    Arm.DrawRobotArms();
-    Arm.DrawSmallCS();
-    Arm.DrawRobotCS();
-    Arm.DrawArmAngles();
 
     Segment1.SetText("L3");
     Segment1.DrawText();
@@ -67,42 +60,54 @@ let canvas = document.querySelector('canvas');
             }
         }
         
-        ClearScreen();
-
-        Arm.DrawRobotArms();
-        Arm.DrawSmallCS();
-        Arm.DrawRobotCS();
-        Arm.DrawWorkingArea(0);
-        Arm.DrawAreaEnds();
+        
+        WhatToDraw(DrawList);
     });
     canvas.addEventListener("mousedown",(e)=>{
-        
-        ctx.beginPath();
-        ctx.strokeStyle = "black";
-        ctx.moveTo(0,0);
-        ctx.lineTo(e.clientX,e.clientY);
-        ctx.stroke();
-        ctx.closePath();
+        if(SettingPoints && PointStaysInside){
+            Arm.SetPointsToMoveBetween(e.clientX,e.clientY);
+            
+            WhatToDraw(DrawList);
+        }
 
-        Arm.SetPointsToMoveBetween(e.clientX,e.clientY);
-        
     });
 
     canvas.addEventListener("mousemove",(e)=>{
-        let res = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,e.clientX,e.clientY);
+        let res = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,0,0,e.clientX,e.clientY);
         if(res % 2 == 1){
             Arm.InverseKinematics(e.clientX,e.clientY);
-            ClearScreen();
-
-            Arm.DrawRobotArms();
-            Arm.DrawSmallCS();
-            Arm.DrawRobotCS();
-            Arm.DrawWorkingArea(0);
-            Arm.DrawAreaEnds();
+            
+            WhatToDraw(DrawList);
         }
+        if(SettingPoints){
+            if(Arm.Points.length > 0){
+                WhatToDraw(DrawList);
+
+                let LastPt = Arm.Points[Arm.Points.length-1];
+                ctx.beginPath();
+                ctx.setLineDash([10,10]);
+                let intersections = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,LastPt.posx,LastPt.posy,e.clientX,e.clientY);
+
+                if(intersections == 0){
+                    PointStaysInside = true;
+                    ctx.strokeStyle = "black";
+                }
+                else{
+                    PointStaysInside = false;
+                    ctx.strokeStyle = "red";
+                }
+
+                ctx.moveTo(LastPt.posx,LastPt.posy);
+                ctx.lineTo(e.clientX,e.clientY);
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
+
+
     });
 
-
+    //Input Variables
     let InputTR = document.querySelector("#VariableInputs").children;
     for(let i = 0; i < InputTR.length; i++){
         InputTR[i].children[0].addEventListener("wheel",(e)=>{
@@ -129,32 +134,92 @@ let canvas = document.querySelector('canvas');
                 e.currentTarget.value = `${RobotInfo[i]}°`;
 
             UpdateRobotInfo();
-            UpdateCanvas();
+            WhatToDraw(DrawList);
             
         });
-        
-    }
-
-
-    UpdateCanvas = () =>{
-        ClearScreen();
-
-        Arm.DrawRobotArms();
-        Arm.DrawSmallCS();
-        Arm.DrawRobotCS();
-        Arm.DrawWorkingArea(0);
-        Arm.DrawAreaEnds();
     }
 
     UpdateRobotInfo = () =>{
         for(let i = 0; i < Arm.Segments.length;i++){
             Arm.Segments[i].Length = RobotInfo[i];
+
             Arm.Segments[i].Min_Angle = RobotInfo[i * 2 + 2];
+            if(Arm.Segments[i].Angle < RobotInfo[i * 2 + 2])
+                Arm.Segments[i].SetMinAngle();
+
             Arm.Segments[i].Max_Angle = RobotInfo[i * 2 + 3];
+            if(Arm.Segments[i].Angle > RobotInfo[i * 2 + 3])
+                Arm.Segments[i].SetMaxAngle();
+
             Arm.Segments[i].UpdateSegments();
         }
     }
 
+    //Checkboxes table -> tbody -> tr
+    let Checkboxes = document.querySelector("#Checkboxes").children[0].children;
+    for(let i = 0; i < Checkboxes.length;i++){
+        let Checkbox = Checkboxes[i].children[0].children[0]
+        Checkbox.addEventListener("click",(e)=>{
+            if(Checkbox.checked){
+                if(DrawList.indexOf(`${i}`) == -1)
+                    DrawList += `${i}`;
+            }
+            else{
+                DrawList = DrawList.replace(`${i}`,"");
+            }
+
+            WhatToDraw(DrawList);
+        });
+    }
+    addEventListener("keydown",(e)=>{
+        if(e.key == "Escape"){
+            SettingPoints = false;
+            WhatToDraw(DrawList);
+        }
+    });
+
+    WhatToDraw = (string) =>{
+        ClearScreen();
+        string.split("").forEach(num=>{
+            let x = parseInt(num);
+            switch(x){
+                case 0:
+                    Arm.DrawWorkingArea(0);
+                    break;
+                case 1:
+                    Arm.DrawAreaEnds();
+                    break;
+                case 2:
+                    Arm.DrawSmallCS();
+                    break;
+                case 3:
+                    Arm.DrawBigCS();
+                    break;
+                case 4:
+                    Arm.DrawRobotCS();
+                    break;
+                case 5:
+                    Arm.DrawArmAngles();
+                    break;
+
+                default:
+                    break;
+            }
+        });
+        Arm.DrawRobotArms();
+        Arm.DrawPointsToMoveBetween();
+    }
+
+    WhatToDraw(DrawList);
+
+    SetPoints = () => {
+        SettingPoints = true;
+    }
+    DeletePoints = () => {
+        SettingPoints = false;
+        Arm.Points = new Array();
+        WhatToDraw(DrawList);
+    }
 
     
 

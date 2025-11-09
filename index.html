@@ -31,12 +31,12 @@
             </tr>
         </table>
     </div>
-    <table id="Buttons">
+    <table id="Checkboxes">
         <tr>
             <td><input type="checkbox" name="WorkingArea" id="WorkingArea"><label for="WorkingArea">Working Area</label></td>
         </tr>
         <tr>
-            <td><input type="checkbox" name="AreaEnds" id="AreaEnds"><label for="AreaEnds">Area Ends</label></td>
+            <td><input type="checkbox" name="AreaEnds" id="AreaEnds"><label for="AreaEnds">Area Ends Points</label></td>
         </tr>
         <tr>
             <td><input type="checkbox" name="SmallCS" id="SmallCS"><label for="SmallCS">Small Coordinate System</label></td>
@@ -45,7 +45,21 @@
             <td><input type="checkbox" name="BigCS" id="BigCS"><label for="BigCS">Big Coordinate System</label></td>
         </tr>
         <tr>
-            <td>5</td>
+            <td><input type="checkbox" name="ArmCS" id="ArmCS"><label for="ArmCS">Arm Coordinate System</label></td>
+        </tr>
+        <tr>
+            <td><input type="checkbox" name="Angles" id="Angles"><label for="BigCS">Angles</label></td>
+        </tr>
+    </table>
+    <table id="Buttons">
+        <tr>
+            <td><button onclick="SetPoints()">Set Points</button></td>
+            <td><button onclick="DeletePoints()">Delete Points</button></td>
+        </tr>
+        <tr>
+            <td><button>Start</button></td>
+            <td><button>Resume</button></td>
+            <td><button>Stop</button></td>
         </tr>
     </table>
     <canvas></canvas>

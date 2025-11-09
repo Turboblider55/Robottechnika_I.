@@ -52,6 +52,7 @@ class Robot_Segment{
             ctx.beginPath();
             ctx.strokeStyle = "black";
             ctx.fillStyle = "black";
+            ctx.setLineDash([]);
             ctx.moveTo(this.CS.origin_x,this.CS.origin_y);
             
             let EndCoords = this.GetSegmentEndPositionGlobal();
@@ -136,7 +137,21 @@ class Robot_Segment{
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${Color},100%,50%)`;
             let Origin = this.GetOrigins();
-            ctx.arc(Origin[0],Origin[1],15,-ConvertAngle(this.CS.angle),-ConvertAngle(this.CS.angle + this.Angle),true);
+            let StartAng = this.CS.angle;
+            let EndAng = this.CS.angle + this.Angle;
+            if(StartAng < EndAng)
+                ctx.arc(Origin[0],Origin[1],15,-ConvertAngle(StartAng),-ConvertAngle(EndAng),true);
+            else
+                ctx.arc(Origin[0],Origin[1],15,-ConvertAngle(EndAng),-ConvertAngle(StartAng),true);
+            ctx.fillStyle = `hsl(${Color},100%,50%)`;
+            ctx.font = "20px Arial";
+            let MiddAngle = this.CS.angle + this.Angle / 2;
+
+            let DistX = Math.cos(-ConvertAngle(MiddAngle)) * 30;
+            let DistY = Math.sin(-ConvertAngle(MiddAngle)) * 30;
+
+            ctx.fillText(`${(this.Angle).toFixed(2)}°`,Origin[0] + DistX, Origin[1] + DistY);
+            
             ctx.stroke();
             ctx.closePath();
         }

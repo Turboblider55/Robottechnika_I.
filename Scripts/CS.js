@@ -100,8 +100,10 @@ class Coordinate_System{
         }
 
         #DrawText(text,posx,posy,Font){
+            ctx.fillStyle = "black";
             ctx.font = Font;
             ctx.fillText(text,posx,posy);
+            ctx.fill();
         }
 
     } 

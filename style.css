@@ -14,7 +14,7 @@ body{
         position: absolute;
         z-index: 1;
     }
-    td,th{
+    #Variables td,th{
         border: 1px solid black;
     }
     input[type="text"]{
@@ -26,17 +26,26 @@ body{
     input:hover{
         background-color: rgba(0,0,0,0.1);
     }
-    #Buttons{
+    #Checkboxes{
         top: 100px;
         position: absolute;
         vertical-align: bottom;
         margin: 5px;
         z-index: 0;
     }
-    #Buttons td {
+    #Checkboxes td {
         padding: 5px;
+        border: 1px solid black;
     }
     .containter{
         width: 100%;
         height: 100%;
+    }
+    #Buttons{
+        position: fixed;
+        bottom: 0;
+        margin: 10px;
+    }
+    #Buttons td{
+        text-align: center;
     }
