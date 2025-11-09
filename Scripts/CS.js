@@ -30,8 +30,8 @@ class Coordinate_System{
 
             //X axis
             for(let i = 0;i < numberOfDiv; i++){
-                ToX += Math.cos(ConvertAngle(-this.angle)) * 50;
-                ToY += Math.sin(ConvertAngle(-this.angle)) *  50;
+                ToX += Math.cos(ConvertAngle(-this.angle)) * 100;
+                ToY += Math.sin(ConvertAngle(-this.angle)) *  100;
                 ctx.lineTo(this.origin_x + ToX,this.origin_y +  ToY);
 
                 let DivFromCoords = this.#GetDivCoords(90);
@@ -65,8 +65,8 @@ class Coordinate_System{
 
             //Y Axis
             for(let i = 0;i < numberOfDiv; i++){
-                ToX += Math.sin(ConvertAngle(-this.angle)) * 50;
-                ToY += Math.cos(ConvertAngle(-this.angle)) * 50;
+                ToX += Math.sin(ConvertAngle(-this.angle)) * 100;
+                ToY += Math.cos(ConvertAngle(-this.angle)) * 100;
                 ctx.lineTo(this.origin_x + ToX,this.origin_y -  ToY);
 
                 let DivFromCoords = this.#GetDivCoords(90);

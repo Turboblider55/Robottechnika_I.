@@ -132,6 +132,14 @@ class Robot_Segment{
                 DrawArc(this.CS.origin_x,this.CS.origin_y,Dist,StartAngle,EndAngle,true,[5,5]);
             }
         }
+        DrawAngle(Color){
+            ctx.beginPath();
+            ctx.strokeStyle = `hsl(${Color},100%,50%)`;
+            let Origin = this.GetOrigins();
+            ctx.arc(Origin[0],Origin[1],15,-ConvertAngle(this.CS.angle),-ConvertAngle(this.CS.angle + this.Angle),true);
+            ctx.stroke();
+            ctx.closePath();
+        }
         GetNextXSegmentPos(depth){
             //If depth is given it will go till that
             if(depth != null){

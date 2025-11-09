@@ -18,44 +18,38 @@ let canvas = document.querySelector('canvas');
     const Second_Length = 0.9;
     const Second_Min_Angle = 45;
     const Second_Max_Angle = 135;
+    //L3 , L4 , 32Min , 32Max , 43Min , 43 Max , tgy , v
+    let RobotInfo = [1.2,0.9,25,90,45,135,0.5,1.2];
 
     let CS = new Coordinate_System(Width / 2,Height / 2,0);
     CS.DrawCS();
     
-    let Segment1 = new Robot_Segment(CS,First_Length, First_Min_Angle, First_Min_Angle,First_Max_Angle);
-    let Segment2 = new Robot_Segment(CS,Second_Length, Second_Min_Angle, Second_Min_Angle,Second_Max_Angle);
+    let Segment1 = new Robot_Segment(CS,RobotInfo[0], RobotInfo[2], RobotInfo[2],RobotInfo[3]);
+    let Segment2 = new Robot_Segment(CS,RobotInfo[1], RobotInfo[4], RobotInfo[4],RobotInfo[5]);
     //let Segment3 = new Robot_Segment(CS,Second_Length, Second_Min_Angle, Second_Min_Angle,Second_Max_Angle);
     
     Segment1.SetNextSegment(Segment2);
     Segment2.SetPrevSegment(Segment1);
     
-    // Segment2.SetNextSegment(Segment3);
-    // Segment3.SetPrevSegment(Segment2);
-
-    Segment1.CS.DrawCS();
-    Segment1.CS.DrawCSWithDivision(4);
-    Segment1.Draw();
-    
-    Segment2.CS.DrawCS();
-    Segment2.CS.DrawCSWithDivision(2);
-    Segment2.Draw();
-
-    // Segment3.CS.DrawCS();
-    // Segment3.CS.DrawCSWithDivision(2);
-    // Segment3.Draw();
-
     Arm = new Robot_Arm(CS);
     Arm.Segments[0] = Segment1;
     Arm.Segments[1] = Segment2;
     //Arm.Segments[2] = Segment3;
+
     Arm.DrawWorkingArea(0);
     Arm.DrawAreaEnds();
+    Arm.DrawRobotArms();
+    Arm.DrawSmallCS();
+    Arm.DrawRobotCS();
+    Arm.DrawArmAngles();
 
     Segment1.SetText("L3");
     Segment1.DrawText();
+    Segment1.DrawAngle(0);
 
     Segment2.SetText("L4");
     Segment2.DrawText();
+    Segment2.DrawAngle(0);
 
     canvas.addEventListener("wheel",e=>{
         if(e.deltaY < 0){
@@ -75,29 +69,11 @@ let canvas = document.querySelector('canvas');
         
         ClearScreen();
 
-        Segment1.CS.DrawCS();
-        Segment1.Draw();
-        Segment1.CS.DrawCSWithDivision(4);
-        
-        Segment2.CS.DrawCS();
-        Segment2.Draw();
-        Segment2.CS.DrawCSWithDivision(2);
-        
-        // Segment3.CS.DrawCS();
-        // Segment3.Draw();
-        // Segment3.CS.DrawCSWithDivision(2);
-
-        
-        Segment1.SetText("L3");
-        Segment1.DrawText();
-
-        Segment2.SetText("L4");
-        Segment2.DrawText();
-        
+        Arm.DrawRobotArms();
+        Arm.DrawSmallCS();
+        Arm.DrawRobotCS();
         Arm.DrawWorkingArea(0);
         Arm.DrawAreaEnds();
-
-
     });
     canvas.addEventListener("mousedown",(e)=>{
         
@@ -118,16 +94,67 @@ let canvas = document.querySelector('canvas');
             Arm.InverseKinematics(e.clientX,e.clientY);
             ClearScreen();
 
-            Segment1.CS.DrawCS();
-            Segment1.Draw();
-            Segment1.CS.DrawCSWithDivision(4);
-            
-            Segment2.CS.DrawCS();
-            Segment2.Draw();
-            Segment2.CS.DrawCSWithDivision(2);
+            Arm.DrawRobotArms();
+            Arm.DrawSmallCS();
+            Arm.DrawRobotCS();
             Arm.DrawWorkingArea(0);
+            Arm.DrawAreaEnds();
         }
     });
+
+
+    let InputTR = document.querySelector("#VariableInputs").children;
+    for(let i = 0; i < InputTR.length; i++){
+        InputTR[i].children[0].addEventListener("wheel",(e)=>{
+            let CurVal = (e.currentTarget.value);
+            if(e.deltaY < 0){
+                if(i < 2 || i > 5){
+                    RobotInfo[i] += 0.1;
+                }
+                else{
+                    RobotInfo[i] += 1;
+                }
+            }
+            else{
+                if(i < 2 || i > 5){
+                    RobotInfo[i] -= 0.1;
+                }
+                else{
+                    RobotInfo[i] -= 1;
+                }
+            }
+            if(i < 2 || i > 5)
+                e.currentTarget.value = RobotInfo[i].toFixed(1);
+            else
+                e.currentTarget.value = `${RobotInfo[i]}°`;
+
+            UpdateRobotInfo();
+            UpdateCanvas();
+            
+        });
+        
+    }
+
+
+    UpdateCanvas = () =>{
+        ClearScreen();
+
+        Arm.DrawRobotArms();
+        Arm.DrawSmallCS();
+        Arm.DrawRobotCS();
+        Arm.DrawWorkingArea(0);
+        Arm.DrawAreaEnds();
+    }
+
+    UpdateRobotInfo = () =>{
+        for(let i = 0; i < Arm.Segments.length;i++){
+            Arm.Segments[i].Length = RobotInfo[i];
+            Arm.Segments[i].Min_Angle = RobotInfo[i * 2 + 2];
+            Arm.Segments[i].Max_Angle = RobotInfo[i * 2 + 3];
+            Arm.Segments[i].UpdateSegments();
+        }
+    }
+
 
     
 

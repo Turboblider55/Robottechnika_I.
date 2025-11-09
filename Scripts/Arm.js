@@ -35,7 +35,31 @@ class Robot_Arm{
             })
         }
         DrawBigCS(){
-            
+            this.Segments.forEach(Segment=>{
+                Segment.CS.DrawCSWithDivision( Math.ceil(Segment.Length));
+            })
+        }
+        DrawRobotCS(){
+            let SegLenTotal = 0;
+            this.Segments.forEach(Segment=>{
+                SegLenTotal += Segment.Length;
+            });
+            this.CS.DrawCSWithDivision(Math.ceil(SegLenTotal));
+        }
+        DrawRobotArms(){
+            this.Segments.forEach(Segment=>{
+                Segment.Draw();
+            });
+        }
+        DrawArmText(){
+            this.Segments.forEach(Segment=>{
+                Segment.DrawText();
+            });
+        }
+        DrawArmAngles(){
+            for(let i = 0; i < this.Segments.length -1;i ++){
+                this.Segments[i].DrawAngle(i * (320 / this.Segments.length));
+            }
         }
         DrawWorkingArea(Level,MinLevel,state){
             let SegmentsAngles = [];
@@ -137,7 +161,7 @@ class Robot_Arm{
             if(res % 2 == 1){
                 this.Points.push(new Point(posx,posy,5,'X'));
 
-                for(let i = 0; i < this.Points.length - 1; i++){
+                for(let i = 0; i < this.Points.length; i++){
                 ctx.beginPath();
                 ctx.strokeStyle = "black";
                 ctx.setLineDash([10,10]);
@@ -334,6 +358,7 @@ class Robot_Arm{
             //Converting angles
             Ang1 = Ang1 * 180 / Math.PI;
             Ang2 = Ang2 * 180 / Math.PI;
+
             this.Segments[0].SetAngle(Ang1);
             this.Segments[1].SetAngle(Ang2);
         }
