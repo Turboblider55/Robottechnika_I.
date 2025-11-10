@@ -227,6 +227,7 @@ let canvas = document.querySelector('canvas');
         });
         Arm.DrawRobotArms();
         Arm.DrawPointsToMoveBetween();
+        Arm.DrawArmText();
     }
 
     WhatToDraw(DrawList);
@@ -247,7 +248,14 @@ let canvas = document.querySelector('canvas');
         Arm.MoveBetweenPoints(0,1);
     }
     Pause = () =>{
-        MovingBetweenPoints = MovingStates.PAUSED;
+        if(MovingBetweenPoints == MovingStates.MOVING){
+            MovingBetweenPoints = MovingStates.PAUSED;
+            return;
+        }
+        if(MovingBetweenPoints == MovingStates.PAUSED){
+            MovingBetweenPoints = MovingStates.MOVING;
+            return;
+        }
     }
     Stop = () =>{
         MovingBetweenPoints = MovingStates.STOPPED;

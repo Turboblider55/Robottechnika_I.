@@ -401,34 +401,39 @@ class Robot_Arm{
             console.log(this.Maxvel);
 
             //The Distance it takes to speed and and slow down
-            let DistToSpeedUp = (this.Maxvel + 0.5 * (-acc) * this.tgy**2) * 100;
+            let DistToSpeedUp = (0.5 * (acc) * this.tgy**2) * 100;
+            let DistToSlowDown = (this.Maxvel - 0.5 * (acc) * this.tgy**2) * 100;
 
-            console.log(DistToSpeedUp);
+            console.log(DistToSpeedUp,DistToSlowDown);
 
             let CurrX = 0;
             let CurrY = 0;
             //The current Distance from the point
             let MaxVelHere = this.Maxvel;
             
+            let now = Date.now();
         
-            this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy);
+            this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now);
             
         }
 
-        moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY){
+        moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then){
 
             let CurrDist = Math.sqrt(CurrX**2 + CurrY**2);
 
+            let now = Date.now();
+            //Milliseconds
+            let td = (now - then) / 1000;
+
             //Speeding up
             if((currVel < MaxVelHere) && (CurrDist < Dist / 2) && (CurrDist < DistToSpeedUp)){
-                currVel += acc * (1 / 60);
-                console.log("Speeding up");
+                currVel += acc * td;
             }
             //Slowing down
-            if((CurrDist > Dist / 2) && (CurrDist > (Dist - DistToSpeedUp)) && currVel > 0){
-                currVel -= acc * (1 / 60);
-                console.log("Slowing down");
+            else if((CurrDist > Dist / 2) && (CurrDist > (Dist - DistToSpeedUp)) && (currVel > 0)){
+                currVel -= acc * td;
             }
+
 
             if(currVel < 0){
                 MovingBetweenPoints = MovingStates.STOPPED;
@@ -437,28 +442,32 @@ class Robot_Arm{
                 return;
             }
 
-            CurrX += (NormalDiffX * currVel) * 60;
-            CurrY += (NormalDiffY * currVel) * 60;
+            CurrX += (NormalDiffX * currVel) * 100 * td;
+            CurrY += (NormalDiffY * currVel) * 100 * td;
 
             this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
 
             WhatToDraw(DrawList);
 
-            function paused(){
-            //looping itself waiting for moving states
-            if(MovingBetweenPoints == MovingStates.PAUSED)
-                requestAnimationFrame(paused);
-
-            // //if states changed check if it's moving, else leave function and return
-            // else if(MovingBetweenPoints == MovingStates.MOVING)
-            //     requestAnimationFrame(this.moving(CurrX,CurrY,currVel,MaxVelHere,CurrDistSqr,DistSqr,DistToSpeedUp,acc,NormalDiffX,NormalDiffY));
+            //If paused, it will stop and loop waiting for moving states
+            if(MovingBetweenPoints == MovingStates.PAUSED){
+                requestAnimationFrame(()=>{this.#paused()});
             }
 
             //If moving, call this loop till end
             if(MovingBetweenPoints == MovingStates.MOVING)
-                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY);});
-            //If paused, it will stop and loop waiting for moving states
-            if(MovingBetweenPoints == MovingStates.PAUSED)
-                requestAnimationFrame(paused);
+                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now);});
+            
         }
+
+         #paused(){
+            //looping itself waiting for moving states
+            if(MovingBetweenPoints == MovingStates.PAUSED)
+                requestAnimationFrame(()=>{this.#paused()});
+
+            console.log("Looping here");
+            // //if states changed check if it's moving, else leave function and return
+            // else if(MovingBetweenPoints == MovingStates.MOVING)
+            //     requestAnimationFrame(this.moving(CurrX,CurrY,currVel,MaxVelHere,CurrDistSqr,DistSqr,DistToSpeedUp,acc,NormalDiffX,NormalDiffY));
+            }
     }

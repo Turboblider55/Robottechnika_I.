@@ -197,6 +197,7 @@ class Robot_Segment{
             ctx.Font = "20px Arial";
             let HalfTextWidth = ctx.measureText(this.Text).width / 2;
             ctx.fillText(this.Text,Origins[0] + SegCenterX ,Origins[1] + SegCenterY);
+            ctx.fill();
             ctx.closePath();
         }
         
