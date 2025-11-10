@@ -15,6 +15,14 @@ let canvas = document.querySelector('canvas');
     //L3 , L4 , 32Min , 32Max , 43Min , 43 Max , tgy , v
     let RobotInfo = [1.2,0.9,25,90,45,135,0.5,1.2];
 
+    //Three states
+    const MovingStates = {
+        STOPPED: 0,
+        MOVING: 1,
+        PAUSED: 2
+    }
+    let MovingBetweenPoints = MovingStates.STOPPED;
+
     //A string of numbers relared to the checkboxes
     let DrawList = ""
 
@@ -34,6 +42,8 @@ let canvas = document.querySelector('canvas');
     Arm = new Robot_Arm(CS);
     Arm.Segments[0] = Segment1;
     Arm.Segments[1] = Segment2;
+    Arm.tgy = RobotInfo[RobotInfo.length - 2];
+    Arm.Maxvel = RobotInfo[RobotInfo.length - 1];
     //Arm.Segments[2] = Segment3;
 
     Segment1.SetText("L3");
@@ -45,65 +55,70 @@ let canvas = document.querySelector('canvas');
     Segment2.DrawAngle(0);
 
     canvas.addEventListener("wheel",e=>{
-        if(e.deltaY < 0){
-            
-            for(let i = 0; i < Arm.Segments.length; i++){
-                Arm.Segments[i].RotateAroundOrigin((Arm.Segments[i].Max_Angle - Arm.Segments[i].Min_Angle) / 10);
+        if(MovingBetweenPoints == MovingStates.STOPPED){
+            if(e.deltaY < 0){
+                
+                for(let i = 0; i < Arm.Segments.length; i++){
+                    Arm.Segments[i].RotateAroundOrigin((Arm.Segments[i].Max_Angle - Arm.Segments[i].Min_Angle) / 10);
+                }
+    
+                //console.log(Segment1.Angle)
             }
-
-            //console.log(Segment1.Angle)
-        }
-        else if(e.deltaY > 0){
-            
-            for(let i = 0; i < Arm.Segments.length; i++){
-                Arm.Segments[i].RotateAroundOrigin(-(Arm.Segments[i].Max_Angle - Arm.Segments[i].Min_Angle) / 10);
+            else if(e.deltaY > 0){
+                
+                for(let i = 0; i < Arm.Segments.length; i++){
+                    Arm.Segments[i].RotateAroundOrigin(-(Arm.Segments[i].Max_Angle - Arm.Segments[i].Min_Angle) / 10);
+                }
             }
-        }
-        
-        
-        WhatToDraw(DrawList);
-    });
-    canvas.addEventListener("mousedown",(e)=>{
-        if(SettingPoints && PointStaysInside){
-            Arm.SetPointsToMoveBetween(e.clientX,e.clientY);
             
             WhatToDraw(DrawList);
+        }
+    });
+    canvas.addEventListener("mousedown",(e)=>{
+        if(MovingBetweenPoints == MovingStates.STOPPED){
+            if(SettingPoints && PointStaysInside){
+                Arm.SetPointsToMoveBetween(e.clientX,e.clientY);
+                
+                WhatToDraw(DrawList);
+            }
         }
 
     });
 
     canvas.addEventListener("mousemove",(e)=>{
-        let res = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,0,0,e.clientX,e.clientY);
-        if(res % 2 == 1){
-            Arm.InverseKinematics(e.clientX,e.clientY);
-            
-            WhatToDraw(DrawList);
-        }
-        if(SettingPoints){
-            if(Arm.Points.length > 0){
+        //We shall only check there if we're not animating the Arm
+        if(MovingBetweenPoints == MovingStates.STOPPED){
+            let res = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,0,0,e.clientX,e.clientY);
+            if(res % 2 == 1){
+                Arm.InverseKinematics(e.clientX,e.clientY);
+                
                 WhatToDraw(DrawList);
-
-                let LastPt = Arm.Points[Arm.Points.length-1];
-                ctx.beginPath();
-                ctx.setLineDash([10,10]);
-                let intersections = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,LastPt.posx,LastPt.posy,e.clientX,e.clientY);
-
-                if(intersections == 0){
-                    PointStaysInside = true;
-                    ctx.strokeStyle = "black";
+            }
+            if(SettingPoints){
+                if(Arm.Points.length > 0){
+                    WhatToDraw(DrawList);
+    
+                    let LastPt = Arm.Points[Arm.Points.length-1];
+                    ctx.beginPath();
+                    ctx.setLineDash([10,10]);
+                    let intersections = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,LastPt.posx,LastPt.posy,e.clientX,e.clientY);
+    
+                    if(intersections == 0){
+                        PointStaysInside = true;
+                        ctx.strokeStyle = "black";
+                    }
+                    else{
+                        PointStaysInside = false;
+                        ctx.strokeStyle = "red";
+                    }
+    
+                    ctx.moveTo(LastPt.posx,LastPt.posy);
+                    ctx.lineTo(e.clientX,e.clientY);
+                    ctx.stroke();
+                    ctx.closePath();
                 }
-                else{
-                    PointStaysInside = false;
-                    ctx.strokeStyle = "red";
-                }
-
-                ctx.moveTo(LastPt.posx,LastPt.posy);
-                ctx.lineTo(e.clientX,e.clientY);
-                ctx.stroke();
-                ctx.closePath();
             }
         }
-
 
     });
 
@@ -123,6 +138,8 @@ let canvas = document.querySelector('canvas');
             else{
                 if(i < 2 || i > 5){
                     RobotInfo[i] -= 0.1;
+                    if(RobotInfo[i] < 0)
+                        RobotInfo[i] = 0;
                 }
                 else{
                     RobotInfo[i] -= 1;
@@ -153,6 +170,8 @@ let canvas = document.querySelector('canvas');
 
             Arm.Segments[i].UpdateSegments();
         }
+        Arm.tgy = RobotInfo[RobotInfo.length - 2];
+        Arm.Maxvel = RobotInfo[RobotInfo.length - 1];
     }
 
     //Checkboxes table -> tbody -> tr
@@ -222,6 +241,17 @@ let canvas = document.querySelector('canvas');
     }
 
     
+
+    Move = () =>{
+        MovingBetweenPoints = MovingStates.MOVING;
+        Arm.MoveBetweenPoints(0,1);
+    }
+    Pause = () =>{
+        MovingBetweenPoints = MovingStates.PAUSED;
+    }
+    Stop = () =>{
+        MovingBetweenPoints = MovingStates.STOPPED;
+    }
 
 
 

@@ -48,7 +48,7 @@
             <td><input type="checkbox" name="ArmCS" id="ArmCS"><label for="ArmCS">Arm Coordinate System</label></td>
         </tr>
         <tr>
-            <td><input type="checkbox" name="Angles" id="Angles"><label for="BigCS">Angles</label></td>
+            <td><input type="checkbox" name="Angles" id="Angles"><label for="Angles">Angles</label></td>
         </tr>
     </table>
     <table id="Buttons">
@@ -57,9 +57,9 @@
             <td><button onclick="DeletePoints()">Delete Points</button></td>
         </tr>
         <tr>
-            <td><button>Start</button></td>
-            <td><button>Resume</button></td>
-            <td><button>Stop</button></td>
+            <td><button onclick="Move()">Start / Resume</button></td>
+            <td><button onclick="Pause()">Pause</button></td>
+            <td><button onclick="Stop()">Stop</button></td>
         </tr>
     </table>
     <canvas></canvas>

@@ -3,6 +3,8 @@ class Robot_Arm{
             this.CS = CS;
             this.Segments = new Array();
             this.Points = new Array();
+            this.tgy = 0;
+            this.Maxvel = 0;
         }
         SaveSegmentsAngles(Level,arr){
             if(Level == null)
@@ -366,4 +368,97 @@ class Robot_Arm{
             this.Segments[1].SetAngle(Ang2);
         }
 
+        MoveBetweenPoints(startPIndex,endPIndex){
+
+            let Devisions = 10;
+
+            // let Pt1 = new Point(0,0,10,"S");
+            // let Pt2 = new Point(100,100,10,"E");
+            
+            // let DiffX = Pt1.posx - Pt2.posx;
+            // let DiffY = Pt1.posy - Pt2.posy;
+
+            let StartP = this.Points[startPIndex];
+            let EndP = this.Points[endPIndex];
+
+            let DiffX = EndP.posx - StartP.posx;
+            let DiffY = EndP.posy - StartP.posy;
+
+            //The distance squared, we don't need to calculate with the actual distance
+            //so we can save the sqrt 
+
+            //Normalizing the differences will give us a normal vector
+            //we can use that to move the arm end point
+            let Dist = Math.sqrt(DiffX**2 + DiffY**2);
+            let NormalDiffX = DiffX / Dist;
+            let NormalDiffY = DiffY / Dist;
+
+            //How fast the robot arm should accelerate
+            let acc = this.Maxvel / this.tgy;
+            //Current velocity
+            let currVel = 0;
+
+            console.log(this.Maxvel);
+
+            //The Distance it takes to speed and and slow down
+            let DistToSpeedUp = (this.Maxvel + 0.5 * (-acc) * this.tgy**2) * 100;
+
+            console.log(DistToSpeedUp);
+
+            let CurrX = 0;
+            let CurrY = 0;
+            //The current Distance from the point
+            let MaxVelHere = this.Maxvel;
+            
+        
+            this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy);
+            
+        }
+
+        moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY){
+
+            let CurrDist = Math.sqrt(CurrX**2 + CurrY**2);
+
+            //Speeding up
+            if((currVel < MaxVelHere) && (CurrDist < Dist / 2) && (CurrDist < DistToSpeedUp)){
+                currVel += acc * (1 / 60);
+                console.log("Speeding up");
+            }
+            //Slowing down
+            if((CurrDist > Dist / 2) && (CurrDist > (Dist - DistToSpeedUp)) && currVel > 0){
+                currVel -= acc * (1 / 60);
+                console.log("Slowing down");
+            }
+
+            if(currVel < 0){
+                MovingBetweenPoints = MovingStates.STOPPED;
+                currVel = 0;
+                console.log("Program exited");
+                return;
+            }
+
+            CurrX += (NormalDiffX * currVel) * 60;
+            CurrY += (NormalDiffY * currVel) * 60;
+
+            this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
+
+            WhatToDraw(DrawList);
+
+            function paused(){
+            //looping itself waiting for moving states
+            if(MovingBetweenPoints == MovingStates.PAUSED)
+                requestAnimationFrame(paused);
+
+            // //if states changed check if it's moving, else leave function and return
+            // else if(MovingBetweenPoints == MovingStates.MOVING)
+            //     requestAnimationFrame(this.moving(CurrX,CurrY,currVel,MaxVelHere,CurrDistSqr,DistSqr,DistToSpeedUp,acc,NormalDiffX,NormalDiffY));
+            }
+
+            //If moving, call this loop till end
+            if(MovingBetweenPoints == MovingStates.MOVING)
+                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY);});
+            //If paused, it will stop and loop waiting for moving states
+            if(MovingBetweenPoints == MovingStates.PAUSED)
+                requestAnimationFrame(paused);
+        }
     }
