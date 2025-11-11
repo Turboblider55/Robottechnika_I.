@@ -236,16 +236,21 @@ let canvas = document.querySelector('canvas');
         SettingPoints = true;
     }
     DeletePoints = () => {
-        SettingPoints = false;
-        Arm.Points = new Array();
-        WhatToDraw(DrawList);
+        if(MovingBetweenPoints != MovingStates.MOVING){
+            SettingPoints = false;
+            MovingBetweenPoints = MovingStates.STOPPED;
+            Arm.Points = new Array();
+            WhatToDraw(DrawList);
+        }
     }
 
     
 
     Move = () =>{
+        //If it's running, first we should stop it, then restart it.
         MovingBetweenPoints = MovingStates.MOVING;
-        Arm.MoveBetweenPoints(0,1);
+        //For know this doesn't work, we only work with the first to point
+        Arm.MoveBetweenPoints();
     }
     Pause = () =>{
         if(MovingBetweenPoints == MovingStates.MOVING){

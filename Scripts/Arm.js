@@ -160,7 +160,7 @@ class Robot_Arm{
         }
         SetPointsToMoveBetween(posx,posy){
             let res = this.CheckIfPointIsInSideWorkingArea(0,null,null,0,0,posx,posy);
-            console.log(res);
+            //console.log(res);
             if(res % 2 == 1){
                 this.Points.push(new Point(posx,posy,5,'X'));
             }
@@ -368,53 +368,48 @@ class Robot_Arm{
             this.Segments[1].SetAngle(Ang2);
         }
 
-        MoveBetweenPoints(startPIndex,endPIndex){
+        async MoveBetweenPoints(){
 
-            let Devisions = 10;
+            for(let i = 0; i < this.Points.length - 1;i++){
 
-            // let Pt1 = new Point(0,0,10,"S");
-            // let Pt2 = new Point(100,100,10,"E");
-            
-            // let DiffX = Pt1.posx - Pt2.posx;
-            // let DiffY = Pt1.posy - Pt2.posy;
+                let Devisions = 10;
 
-            let StartP = this.Points[startPIndex];
-            let EndP = this.Points[endPIndex];
+                let StartP = this.Points[0];
+                let EndP = this.Points[1];
 
-            let DiffX = EndP.posx - StartP.posx;
-            let DiffY = EndP.posy - StartP.posy;
+                let DiffX = EndP.posx - StartP.posx;
+                let DiffY = EndP.posy - StartP.posy;
 
-            //The distance squared, we don't need to calculate with the actual distance
-            //so we can save the sqrt 
+                //The distance squared, we don't need to calculate with the actual distance
+                //so we can save the sqrt 
 
-            //Normalizing the differences will give us a normal vector
-            //we can use that to move the arm end point
-            let Dist = Math.sqrt(DiffX**2 + DiffY**2);
-            let NormalDiffX = DiffX / Dist;
-            let NormalDiffY = DiffY / Dist;
+                //Normalizing the differences will give us a normal vector
+                //we can use that to move the arm end point
+                let Dist = Math.sqrt(DiffX**2 + DiffY**2);
+                let NormalDiffX = DiffX / Dist;
+                let NormalDiffY = DiffY / Dist;
 
-            //How fast the robot arm should accelerate
-            let acc = this.Maxvel / this.tgy;
-            //Current velocity
-            let currVel = 0;
+                //How fast the robot arm should accelerate - decelerate
+                let acc = this.Maxvel / this.tgy;
+                //Current velocity
+                let currVel = 0;
 
-            console.log(this.Maxvel);
 
-            //The Distance it takes to speed and and slow down
-            let DistToSpeedUp = (0.5 * (acc) * this.tgy**2) * 100;
-            let DistToSlowDown = (this.Maxvel - 0.5 * (acc) * this.tgy**2) * 100;
+                //The Distance it takes to speed and and slow down
+                let DistToSpeedUp = (0.5 * (acc) * this.tgy**2) * 100;
+                let DistToSlowDown = (this.Maxvel - 0.5 * (acc) * this.tgy**2) * 100;
 
-            console.log(DistToSpeedUp,DistToSlowDown);
 
-            let CurrX = 0;
-            let CurrY = 0;
-            //The current Distance from the point
-            let MaxVelHere = this.Maxvel;
-            
-            let now = Date.now();
-        
-            this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now);
-            
+                let CurrX = 0;
+                let CurrY = 0;
+                //The current Distance from the point
+                let MaxVelHere = this.Maxvel;
+                
+                let now = Date.now();
+                //requestaniamationframe returns the current frame number, so we cant use that as a promise
+                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now)});
+            }
+
         }
 
         moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then){
@@ -434,12 +429,10 @@ class Robot_Arm{
                 currVel -= acc * td;
             }
 
-
             if(currVel < 0){
-                MovingBetweenPoints = MovingStates.STOPPED;
                 currVel = 0;
                 console.log("Program exited");
-                return;
+                return true;
             }
 
             CurrX += (NormalDiffX * currVel) * 100 * td;
@@ -465,17 +458,15 @@ class Robot_Arm{
                 requestAnimationFrame(()=>{this.#paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)});
                 console.log("Looping here");
             }
-            else if(MovingBetweenPoints == MovingStates.MOVING){
-                this.#Recall(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)
-                //requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now)});
-            }
             // //if states changed check if it's moving, else leave function and return
-            // else if(MovingBetweenPoints == MovingStates.MOVING)
-            //     requestAnimationFrame(this.moving(CurrX,CurrY,currVel,MaxVelHere,CurrDistSqr,DistSqr,DistToSpeedUp,acc,NormalDiffX,NormalDiffY));
+            else if(MovingBetweenPoints == MovingStates.MOVING){
+                let now = Date.now();
+                //this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now);
+                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now)});
+            }
+            else{
+                return;
+            }
         }
 
-        #Recall(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY){
-            let now = Date.now();
-            requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now)});
-        }
     }
