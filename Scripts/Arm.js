@@ -447,27 +447,35 @@ class Robot_Arm{
 
             this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
 
-            WhatToDraw(DrawList);
-
             //If paused, it will stop and loop waiting for moving states
             if(MovingBetweenPoints == MovingStates.PAUSED){
-                requestAnimationFrame(()=>{this.#paused()});
+                requestAnimationFrame(()=>{this.#paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)});
             }
 
             //If moving, call this loop till end
             if(MovingBetweenPoints == MovingStates.MOVING)
                 requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now);});
             
+            WhatToDraw(DrawList);
         }
 
-         #paused(){
+        #paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY){
             //looping itself waiting for moving states
-            if(MovingBetweenPoints == MovingStates.PAUSED)
-                requestAnimationFrame(()=>{this.#paused()});
-
-            console.log("Looping here");
+            if(MovingBetweenPoints == MovingStates.PAUSED){
+                requestAnimationFrame(()=>{this.#paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)});
+                console.log("Looping here");
+            }
+            else if(MovingBetweenPoints == MovingStates.MOVING){
+                this.#Recall(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)
+                //requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now)});
+            }
             // //if states changed check if it's moving, else leave function and return
             // else if(MovingBetweenPoints == MovingStates.MOVING)
             //     requestAnimationFrame(this.moving(CurrX,CurrY,currVel,MaxVelHere,CurrDistSqr,DistSqr,DistToSpeedUp,acc,NormalDiffX,NormalDiffY));
-            }
+        }
+
+        #Recall(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY){
+            let now = Date.now();
+            requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now)});
+        }
     }
