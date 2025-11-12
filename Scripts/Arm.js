@@ -357,15 +357,25 @@ class Robot_Arm{
             let Len1 = this.Segments[1].Length * this.Segments[1].Scale;
             let Ang2 = Math.acos((Len0**2 + Len1**2 - XDif**2 - YDif**2) / (2 * Len0 * Len1));
 
-            let Ang11 = -Math.atan(YDif / XDif);
-            let Ang12 = Math.atan((Len1 * Math.sin(Math.PI - Ang2)) / (Len0 + Len1 * Math.cos(Math.PI - Ang2)));
+            let Ang11 = -Math.atan2(YDif , XDif);
+            let Ang12 = Math.atan2((Len1 * Math.sin(Math.PI - Ang2)) , (Len0 + Len1 * Math.cos(Math.PI - Ang2)));
                 
-            let Ang1 = Ang11 + Ang12;
-            //console.log(Ang11,Ang12);
 
+            let Ang1 = Ang11 + Ang12;
+
+            //console.log(Ang11,Ang12);
+            // if(XDif <= 0)
+            //     Ang1 += 90;
+
+            
             //Converting angles
             Ang1 = Ang1 * 180 / Math.PI;
             Ang2 = Ang2 * 180 / Math.PI;
+
+            Ang1 = ConvertAngleToRightRange(-Ang1);
+            Ang2 = ConvertAngleToRightRange(-Ang2);
+            
+            console.log(Ang1);
 
             this.Segments[0].SetAngle(Ang1);
             this.Segments[1].SetAngle(Ang2);
