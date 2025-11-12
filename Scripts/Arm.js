@@ -3,6 +3,7 @@ class Robot_Arm{
             this.CS = CS;
             this.Segments = new Array();
             this.Points = new Array();
+            this.EndPoints = new Array();
             this.tgy = 0;
             this.Maxvel = 0;
         }
@@ -152,10 +153,12 @@ class Robot_Arm{
         }
         DrawAreaEnds(){
             let arr = this.#GetWorkingAreaEndCoords(0); 
+            this.EndPoints = new Array();
             //console.log(arr);
             for(let i = 0; i < arr.length; i++){
                 let Pt = new Point(arr[i][0],arr[i][1],10,String.fromCharCode(i + 65))
                 Pt.Draw((320 / arr.length) * (i));
+                this.EndPoints.push(Pt);
             }
         }
         SetPointsToMoveBetween(posx,posy){
@@ -374,8 +377,8 @@ class Robot_Arm{
 
                 let Devisions = 10;
 
-                let StartP = this.Points[0];
-                let EndP = this.Points[1];
+                let StartP = this.Points[i];
+                let EndP = this.Points[i+1];
 
                 let DiffX = EndP.posx - StartP.posx;
                 let DiffY = EndP.posy - StartP.posy;
@@ -406,18 +409,24 @@ class Robot_Arm{
                 let MaxVelHere = this.Maxvel;
                 
                 let now = Date.now();
+                
                 //requestaniamationframe returns the current frame number, so we cant use that as a promise
-                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now)});
+                requestAnimationFrame(()=>this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now));
+                await new Promise(()=>{
+                    console.log("Called me.");
+                }).then(console.log("Please work"));
+                console.log("The program is here");
             }
 
+            MovingBetweenPoints = MovingStates.STOPPED;
         }
 
         moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then){
-
+           
             let CurrDist = Math.sqrt(CurrX**2 + CurrY**2);
 
             let now = Date.now();
-            //Milliseconds
+            //Milliseconds -> Seconds
             let td = (now - then) / 1000;
 
             //Speeding up
@@ -432,6 +441,7 @@ class Robot_Arm{
             if(currVel < 0){
                 currVel = 0;
                 console.log("Program exited");
+                
                 return true;
             }
 
@@ -444,12 +454,15 @@ class Robot_Arm{
             if(MovingBetweenPoints == MovingStates.PAUSED){
                 requestAnimationFrame(()=>{this.#paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)});
             }
-
             //If moving, call this loop till end
-            if(MovingBetweenPoints == MovingStates.MOVING)
+            else if(MovingBetweenPoints == MovingStates.MOVING)
                 requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now);});
+            else{
+                return false;
+            }
             
             WhatToDraw(DrawList);
+        
         }
 
         #paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY){
@@ -465,7 +478,7 @@ class Robot_Arm{
                 requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now)});
             }
             else{
-                return;
+                return false;
             }
         }
 

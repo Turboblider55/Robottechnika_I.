@@ -20,7 +20,7 @@ class Point{
 
 
         ctx.beginPath();
-        ctx.fillStyle = ""
+        ctx.fillStyle = "black"
         let LetterSize = Math.floor(this.rad * 1.5);
         
         if(LetterSize < 1)

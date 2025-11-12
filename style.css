@@ -49,3 +49,15 @@ body{
     #Buttons td{
         text-align: center;
     }
+    #EndPointTbl{
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        margin: 5px;
+    }
+    .visible{
+        visibility: visible;
+    }
+    .invisible{
+        visibility: hidden;
+    }

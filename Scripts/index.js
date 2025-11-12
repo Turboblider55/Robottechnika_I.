@@ -197,8 +197,36 @@ let canvas = document.querySelector('canvas');
         }
     });
 
+    EndPointTable = (state) =>{
+        let tbl = document.querySelector("#EndPointTbl").children[0];
+        if(state){
+
+            tbl.classList.remove("invisible");
+            tbl.classList.add("visible");
+            
+            let Origins = Arm.Segments[0].GetOrigins();
+            for(let i = 0; i < Arm.EndPoints.length;i++){
+                tbl.deleteRow(Arm.EndPoints.length - i - 1);
+                let tr = document.createElement("tr");
+                let td = document.createElement("td");
+                let p = document.createElement("p");
+                let DiffX = ((Arm.EndPoints[i].posx - Origins[0]) / 100).toFixed(2);
+                let DiffY = (-(Arm.EndPoints[i].posy - Origins[1]) / 100).toFixed(2);
+                p.innerText = `${Arm.EndPoints[i].string} [ X : ${DiffX} | Y : ${DiffY} ]`;
+                td.append(p);
+                tr.append(td);
+                tbl.append(tr);
+            }
+        }
+        else{
+            tbl.classList.remove("visible");
+            tbl.classList.add("invisible");
+        }
+    }
+
     WhatToDraw = (string) =>{
         ClearScreen();
+        EndPointTable(0);
         string.split("").forEach(num=>{
             let x = parseInt(num);
             switch(x){
@@ -207,6 +235,7 @@ let canvas = document.querySelector('canvas');
                     break;
                 case 1:
                     Arm.DrawAreaEnds();
+                    EndPointTable(1);
                     break;
                 case 2:
                     Arm.DrawSmallCS();
@@ -228,6 +257,7 @@ let canvas = document.querySelector('canvas');
         Arm.DrawRobotArms();
         Arm.DrawPointsToMoveBetween();
         Arm.DrawArmText();
+        
     }
 
     WhatToDraw(DrawList);
