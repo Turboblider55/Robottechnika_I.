@@ -5,7 +5,7 @@ body{
     canvas{
         top: 0px;
         left: 0px;
-        position: absolute;
+        position: fixed;
         z-index: -1;
     }
     #Variables{
@@ -18,7 +18,6 @@ body{
         border: 1px solid black;
     }
     input[type="text"]{
-        
         min-width: 25px;
         max-width: 50px;
         font-weight: bold;
@@ -27,7 +26,7 @@ body{
         background-color: rgba(0,0,0,0.1);
     }
     #Checkboxes{
-        top: 100px;
+        top: 15%;
         position: absolute;
         vertical-align: bottom;
         margin: 5px;
@@ -38,8 +37,7 @@ body{
         border: 1px solid black;
     }
     .containter{
-        width: 100%;
-        height: 100%;
+        position: fixed;
     }
     #Buttons{
         position: fixed;
@@ -60,4 +58,8 @@ body{
     }
     .invisible{
         visibility: hidden;
+    }
+    #ArmMovementData{
+        position: fixed;
+        top: 40%;
     }

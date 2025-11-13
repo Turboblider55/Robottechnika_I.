@@ -3,8 +3,8 @@ let canvas = document.querySelector('canvas');
     const Width = window.innerWidth;
     const Height = window.innerHeight;
     
-    canvas.width = Width * 0.95;
-    canvas.height = Height * 0.95;
+    canvas.width = Width;
+    canvas.height = Height;
 
     let ctx = canvas.getContext('2d');
 
@@ -14,6 +14,8 @@ let canvas = document.querySelector('canvas');
     //Konstansok
     //L3 , L4 , 32Min , 32Max , 43Min , 43 Max , tgy , v
     let RobotInfo = [1.2,0.9,25,90,45,135,0.5,1.2];
+
+    let Divisions = 10;
 
     //Three states
     const MovingStates = {
@@ -126,7 +128,6 @@ let canvas = document.querySelector('canvas');
     let InputTR = document.querySelector("#VariableInputs").children;
     for(let i = 0; i < InputTR.length; i++){
         InputTR[i].children[0].addEventListener("wheel",(e)=>{
-            let CurVal = (e.currentTarget.value);
             if(e.deltaY < 0){
                 if(i < 2 || i > 5){
                     RobotInfo[i] += 0.1;
@@ -266,9 +267,8 @@ let canvas = document.querySelector('canvas');
         SettingPoints = true;
     }
     DeletePoints = () => {
-        if(MovingBetweenPoints != MovingStates.MOVING){
+        if(MovingBetweenPoints == MovingStates.STOPPED){
             SettingPoints = false;
-            MovingBetweenPoints = MovingStates.STOPPED;
             Arm.Points = new Array();
             WhatToDraw(DrawList);
         }
@@ -280,7 +280,7 @@ let canvas = document.querySelector('canvas');
         //If it's running, first we should stop it, then restart it.
         MovingBetweenPoints = MovingStates.MOVING;
         //For know this doesn't work, we only work with the first to point
-        Arm.MoveBetweenPoints();
+        Arm.MoveBetweenPoints(Divisions);
     }
     Pause = () =>{
         if(MovingBetweenPoints == MovingStates.MOVING){
@@ -296,6 +296,58 @@ let canvas = document.querySelector('canvas');
         MovingBetweenPoints = MovingStates.STOPPED;
     }
 
+    //Divisions
+    let DivsInput = document.querySelector("#Divs");
+    DivsInput.addEventListener("wheel",(e)=>{
+        if(MovingBetweenPoints == MovingStates.STOPPED){
+            if(e.deltaY < 0){
+                if(Divisions < 10){
+                    Divisions++;
+                    DivsInput.value = Divisions;
+                }
+            }
+            else {
+                if(Divisions > 1){
+                    Divisions--;
+                    DivsInput.value = Divisions;
+                }
+            }
+        }
+    });
+
+    DeleteDivsTbl = () =>{
+        let tbl = document.querySelector("#ArmMovementData").children[1];
+        for(let i = tbl.rows.length; i > 0;i--){
+            tbl.deleteRow(i - i);
+        }
+    }
+
+    AddToDivsTbl = (time,Angs,Coords) =>{
+        let tbody = document.querySelector("#ArmMovementData").children[1];
+        let Count = tbody.children.length;
+        let tr = document.createElement("tr");
+        let DivTd = document.createElement("td");
+        DivTd.innerHTML = Count + 1;
+        let DivTime = document.createElement("td");
+        DivTime.innerText = time.toFixed(2)+" s";
+        
+        tr.append(DivTd);
+        tr.append(DivTime);
+        
+        Coords.forEach(Coord=>{
+            let CoordTd = document.createElement("td");
+            CoordTd.innerText = `${Coord.toFixed(2)}`;
+            tr.append(CoordTd);
+        })
+
+        Angs.forEach(ang=>{
+            let AngTd = document.createElement("td");
+            AngTd.innerText = `${ang.toFixed(2)}°`;
+            tr.append(AngTd);
+        })
+
+        tbody.append(tr);
+    }
 
 
 

@@ -9,73 +9,95 @@
 <body>
     <div class="containter">
         <table id="Variables">
-            <tr id="VariableHeaders">
-                <th>L3 (m)</th>
-                <th>L4 (m)</th>
-                <th>φ32 min [fok]</th>
-                <th>φ32 max [fok]</th>
-                <th>φ43 min [fok]</th>
-                <th>φ43 max [fok]</th>
-                <th>tgy (sec)</th>
-                <th>v (m/s)</th>
-            </tr>
-            <tr id="VariableInputs">
-                <td><input type="text" name="L3" id="L3" value="1.2"></td>
-                <td><input type="text" name="L4" id="L4" value="0.9"></td>
-                <td><input type="text" name="Min32" id="Min32" value="25°"></td>
-                <td><input type="text" name="Max32" id="Max32" value="90°"></td>
-                <td><input type="text" name="Min43" id="Min43" value="45°"></td>
-                <td><input type="text" name="Max43" id="Max43" value="135°"></td>
-                <td><input type="text" name="tgy" id="tgy" value="0.5"></td>
-                <td><input type="text" name="vel" id="vel" value="1.2"></td>
-            </tr>
+            <tbody>
+                <tr id="VariableHeaders">
+                    <th>L3 (m)</th>
+                    <th>L4 (m)</th>
+                    <th>φ32 min [fok]</th>
+                    <th>φ32 max [fok]</th>
+                    <th>φ43 min [fok]</th>
+                    <th>φ43 max [fok]</th>
+                    <th>tgy (sec)</th>
+                    <th>v (m/s)</th>
+                </tr>
+                <tr id="VariableInputs">
+                    <td><input type="text" name="L3" id="L3" value="1.2"></td>
+                    <td><input type="text" name="L4" id="L4" value="0.9"></td>
+                    <td><input type="text" name="Min32" id="Min32" value="25°"></td>
+                    <td><input type="text" name="Max32" id="Max32" value="90°"></td>
+                    <td><input type="text" name="Min43" id="Min43" value="45°"></td>
+                    <td><input type="text" name="Max43" id="Max43" value="135°"></td>
+                    <td><input type="text" name="tgy" id="tgy" value="0.5"></td>
+                    <td><input type="text" name="vel" id="vel" value="1.2"></td>
+                </tr>
+            </tbody>
         </table>
     </div>
     <table id="Checkboxes">
-        <tr>
-            <td><input type="checkbox" name="WorkingArea" id="WorkingArea"><label for="WorkingArea">Working Area</label></td>
-        </tr>
-        <tr>
-            <td><input type="checkbox" name="AreaEnds" id="AreaEnds"><label for="AreaEnds">Area Ends Points</label></td>
-        </tr>
-        <tr>
-            <td><input type="checkbox" name="SmallCS" id="SmallCS"><label for="SmallCS">Small Coordinate System</label></td>
-        </tr>
-        <tr>
-            <td><input type="checkbox" name="BigCS" id="BigCS"><label for="BigCS">Big Coordinate System</label></td>
-        </tr>
-        <tr>
-            <td><input type="checkbox" name="ArmCS" id="ArmCS"><label for="ArmCS">Arm Coordinate System</label></td>
-        </tr>
-        <tr>
-            <td><input type="checkbox" name="Angles" id="Angles"><label for="Angles">Angles</label></td>
-        </tr>
+        <tbody>
+            <tr>
+                <td><input type="checkbox" name="WorkingArea" id="WorkingArea"><label for="WorkingArea">Working Area</label></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="AreaEnds" id="AreaEnds"><label for="AreaEnds">Area Ends Points</label></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="SmallCS" id="SmallCS"><label for="SmallCS">Small Coordinate System</label></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="BigCS" id="BigCS"><label for="BigCS">Big Coordinate System</label></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="ArmCS" id="ArmCS"><label for="ArmCS">Arm Coordinate System</label></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" name="Angles" id="Angles"><label for="Angles">Angles</label></td>
+            </tr>
+        </tbody>
+    </table>
+    <table id="ArmMovementData">
+        <thead>
+            <tr>
+                <th>Div</th>
+                <th>Time</th>
+                <th>Position X</th>
+                <th>Position Y</th>
+                <th>L3 Angle</th>
+                <th>L4 Angle</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
     </table>
     <table id="Buttons">
-        <tr>
-            <td><button onclick="SetPoints()">Set Points</button></td>
-            <td><button onclick="DeletePoints()">Delete Points</button></td>
-        </tr>
-        <tr>
-            <td><button onclick="Move()">Start</button></td>
-            <td><button onclick="Pause()">Pause / Resume</button></td>
-            <td><button onclick="Stop()">Stop</button></td>
-            <td><label for="Divs">Divisions: </label><input type="text" id="Divs" name="Divs" value="10"></td>
-        </tr>
+        <tbody>
+            <tr>
+                <td><button onclick="SetPoints()">Set Points</button></td>
+                <td><button onclick="DeletePoints()">Delete Points</button></td>
+            </tr>
+            <tr>
+                <td><button onclick="Move()">Start</button></td>
+                <td><button onclick="Pause()">Pause / Resume</button></td>
+                <td><button onclick="Stop()">Stop</button></td>
+                <td><label for="Divs">Divisions: </label><input type="text" id="Divs" name="Divs" value="10"></td>
+            </tr>
+        </tbody>
     </table>
     <table id="EndPointTbl" class="invisible">
-        <tr>
-            <td>PlaceHolder 1</td>
-        </tr>
-        <tr>
-            <td>PlaceHolder 2</td>
-        </tr>
-        <tr>
-            <td>PlaceHolder 3</td>
-        </tr>
-        <tr>
-            <td>PlaceHolder 4</td>
-        </tr>
+        <tbody>
+            <tr>
+                <td>PlaceHolder 1</td>
+            </tr>
+            <tr>
+                <td>PlaceHolder 2</td>
+            </tr>
+            <tr>
+                <td>PlaceHolder 3</td>
+            </tr>
+            <tr>
+                <td>PlaceHolder 4</td>
+            </tr>
+        </tbody>
     </table>
     <canvas></canvas>
 </body>

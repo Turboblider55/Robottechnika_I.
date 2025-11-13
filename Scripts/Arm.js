@@ -373,13 +373,13 @@ class Robot_Arm{
             
             this.Segments[0].SetAngle(Ang1);
             this.Segments[1].SetAngle(Ang2);
+
+            return [Ang1,Ang2]
         }
 
-        async MoveBetweenPoints(){
+        async MoveBetweenPoints(Divs){
 
             for(let i = 0; i < this.Points.length - 1;i++){
-
-                let Devisions = 10;
 
                 let StartP = this.Points[i];
                 let EndP = this.Points[i+1];
@@ -415,20 +415,24 @@ class Robot_Arm{
                 let now = Date.now();
 
                 //requestaniamationframe returns the current frame number, so we cant use that as a promise
-                await this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now);
+                await this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now,Divs);
+                
+                if(MovingBetweenPoints == MovingStates.STOPPED)
+                    return;
+                
                 console.log("The program is here");
             }
 
             MovingBetweenPoints = MovingStates.STOPPED;
         }
 
-        async moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then){
+        async moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then,Divs){
+            DeleteDivsTbl();
             return new Promise((resolve)=>{
-                requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then,resolve));
-                
+                requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then,0,0,Divs,resolve));
             });
         }
-        #Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then,resolve){
+        #Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then,sumTime,sumDist,Divs,resolve){
 
                 let CurrDist = Math.sqrt(CurrX**2 + CurrY**2);
                 
@@ -436,6 +440,8 @@ class Robot_Arm{
                 //Milliseconds -> Seconds
                 let td = (now - then) / 1000;
                 
+                sumTime += td;
+
                 //Speeding up
                 if((currVel < MaxVelHere) && (CurrDist < Dist / 2) && (CurrDist < DistToSpeedUp)){
                     currVel += acc * td;
@@ -448,36 +454,57 @@ class Robot_Arm{
                 if(currVel < 0){
                     currVel = 0;
                     console.log("Program exited");
+
+                    let Angles = this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
+
+                    //Writing the last division data
+                    let Origin = this.Segments[0].GetGlobalOrigin();
+                    let PosX = ((StartPX + CurrX) - Origin[0]) / 100;
+                    let PosY = ((StartPY + CurrY) - Origin[1]) / 100;
+                    AddToDivsTbl(sumTime,Angles,[PosX,-PosY]);
+
                     resolve();
                 }
                 
                 CurrX += (NormalDiffX * currVel) * 100 * td;
                 CurrY += (NormalDiffY * currVel) * 100 * td;
+
+                sumDist += Math.sqrt(((NormalDiffX * currVel) * 100 * td)**2 + ((NormalDiffY * currVel) * 100 * td)**2);
                 
-                this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
+                
+                let Angles = this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
+                
+                if(sumDist >= Dist / Divs){
+                    //Travelled 1 / Divs of the total distance
+                    sumDist = 0;
+                    let Origin = this.Segments[0].GetGlobalOrigin();
+                    let PosX = ((StartPX + CurrX) - Origin[0]) / 100;
+                    let PosY = ((StartPY + CurrY) - Origin[1]) / 100;
+                    AddToDivsTbl(sumTime,Angles,[PosX,-PosY]);
+                }
                 
                 //If paused, it will stop and loop waiting for moving states
                 if(MovingBetweenPoints == MovingStates.PAUSED){
-                    requestAnimationFrame(()=>this.#Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,resolve));
+                    requestAnimationFrame(()=>this.#Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,sumTime,sumDist,Divs,resolve));
                 }
                 //If moving, call this loop till end
                 else if(MovingBetweenPoints == MovingStates.MOVING){
-                    requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now,resolve));
+                    requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now,sumTime,sumDist,Divs,resolve));
                 }
                 
                 WhatToDraw(DrawList);
         }
 
-         #Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,resolve){
+         #Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,sumTime,sumDist,Divs,resolve){
             //looping itself waiting for moving states
             if(MovingBetweenPoints == MovingStates.PAUSED){
-                requestAnimationFrame(()=>this.#Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,resolve));
+                requestAnimationFrame(()=>this.#Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,sumTime,sumDist,Divs,resolve));
                 console.log("Looping here");
             }
             // //if states changed check if it's moving, else leave function and return
             else if(MovingBetweenPoints == MovingStates.MOVING){
                 let now = Date.now();
-                requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now,resolve));
+                requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now,sumTime,sumDist,Divs,resolve));
             }
             else{
                 resolve();
