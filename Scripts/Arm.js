@@ -363,20 +363,14 @@ class Robot_Arm{
 
             let Ang1 = Ang11 + Ang12;
 
-            //console.log(Ang11,Ang12);
-            // if(XDif <= 0)
-            //     Ang1 += 90;
-
-            
             //Converting angles
             Ang1 = Ang1 * 180 / Math.PI;
             Ang2 = Ang2 * 180 / Math.PI;
-
+            
+            //Keeping angles in the right range
             Ang1 = ConvertAngleToRightRange(-Ang1);
             Ang2 = ConvertAngleToRightRange(-Ang2);
             
-            console.log(Ang1);
-
             this.Segments[0].SetAngle(Ang1);
             this.Segments[1].SetAngle(Ang2);
         }
@@ -419,77 +413,77 @@ class Robot_Arm{
                 let MaxVelHere = this.Maxvel;
                 
                 let now = Date.now();
-                
+
                 //requestaniamationframe returns the current frame number, so we cant use that as a promise
-                requestAnimationFrame(()=>this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now));
-                await new Promise(()=>{
-                    console.log("Called me.");
-                }).then(console.log("Please work"));
+                await this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartP.posx,StartP.posy,now);
                 console.log("The program is here");
             }
 
             MovingBetweenPoints = MovingStates.STOPPED;
         }
 
-        moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then){
-           
-            let CurrDist = Math.sqrt(CurrX**2 + CurrY**2);
-
-            let now = Date.now();
-            //Milliseconds -> Seconds
-            let td = (now - then) / 1000;
-
-            //Speeding up
-            if((currVel < MaxVelHere) && (CurrDist < Dist / 2) && (CurrDist < DistToSpeedUp)){
-                currVel += acc * td;
-            }
-            //Slowing down
-            else if((CurrDist > Dist / 2) && (CurrDist > (Dist - DistToSpeedUp)) && (currVel > 0)){
-                currVel -= acc * td;
-            }
-
-            if(currVel < 0){
-                currVel = 0;
-                console.log("Program exited");
+        async moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then){
+            return new Promise((resolve)=>{
+                requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then,resolve));
                 
-                return true;
-            }
+            });
+        }
+        #Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,then,resolve){
 
-            CurrX += (NormalDiffX * currVel) * 100 * td;
-            CurrY += (NormalDiffY * currVel) * 100 * td;
-
-            this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
-
-            //If paused, it will stop and loop waiting for moving states
-            if(MovingBetweenPoints == MovingStates.PAUSED){
-                requestAnimationFrame(()=>{this.#paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)});
-            }
-            //If moving, call this loop till end
-            else if(MovingBetweenPoints == MovingStates.MOVING)
-                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now);});
-            else{
-                return false;
-            }
-            
-            WhatToDraw(DrawList);
-        
+                let CurrDist = Math.sqrt(CurrX**2 + CurrY**2);
+                
+                let now = Date.now();
+                //Milliseconds -> Seconds
+                let td = (now - then) / 1000;
+                
+                //Speeding up
+                if((currVel < MaxVelHere) && (CurrDist < Dist / 2) && (CurrDist < DistToSpeedUp)){
+                    currVel += acc * td;
+                }
+                //Slowing down
+                else if((CurrDist > Dist / 2) && (CurrDist > (Dist - DistToSpeedUp)) && (currVel > 0)){
+                    currVel -= acc * td;
+                }
+                
+                if(currVel < 0){
+                    currVel = 0;
+                    console.log("Program exited");
+                    resolve();
+                }
+                
+                CurrX += (NormalDiffX * currVel) * 100 * td;
+                CurrY += (NormalDiffY * currVel) * 100 * td;
+                
+                this.InverseKinematics(StartPX + CurrX,StartPY + CurrY);
+                
+                //If paused, it will stop and loop waiting for moving states
+                if(MovingBetweenPoints == MovingStates.PAUSED){
+                    requestAnimationFrame(()=>this.#Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,resolve));
+                }
+                //If moving, call this loop till end
+                else if(MovingBetweenPoints == MovingStates.MOVING){
+                    requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now,resolve));
+                }
+                
+                WhatToDraw(DrawList);
         }
 
-        #paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY){
+         #Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,resolve){
             //looping itself waiting for moving states
             if(MovingBetweenPoints == MovingStates.PAUSED){
-                requestAnimationFrame(()=>{this.#paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY)});
+                requestAnimationFrame(()=>this.#Paused(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,resolve));
                 console.log("Looping here");
             }
             // //if states changed check if it's moving, else leave function and return
             else if(MovingBetweenPoints == MovingStates.MOVING){
                 let now = Date.now();
-                //this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now);
-                requestAnimationFrame(()=>{this.moving(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now)});
+                requestAnimationFrame(()=>this.#Step(CurrX,CurrY,currVel,MaxVelHere,Dist,DistToSpeedUp,acc,NormalDiffX,NormalDiffY,StartPX,StartPY,now,resolve));
             }
             else{
-                return false;
+                resolve();
             }
         }
+
+        
 
     }
