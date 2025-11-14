@@ -103,7 +103,7 @@ class Robot_Arm{
                         this.Segments[Level].SetMaxAngle();
                     else
                         this.Segments[Level].SetMinAngle();
-
+                    
                     this.Segments[Level].DrawOwnArea(); 
                 }
                 
@@ -163,7 +163,7 @@ class Robot_Arm{
         }
         SetPointsToMoveBetween(posx,posy){
             let res = this.CheckIfPointIsInSideWorkingArea(0,null,null,0,0,posx,posy);
-            //console.log(res);
+            console.log(res);
             if(res % 2 == 1){
                 this.Points.push(new Point(posx,posy,5,'X'));
             }
@@ -370,6 +370,11 @@ class Robot_Arm{
             //Keeping angles in the right range
             Ang1 = ConvertAngleToRightRange(-Ang1);
             Ang2 = ConvertAngleToRightRange(-Ang2);
+
+            if(Ang1 > this.Segments[0].Max_Angle)
+                Ang1 -= 360;
+            if(Ang2 > this.Segments[1].Max_Angle)
+                Ang2 -= 360;
             
             this.Segments[0].SetAngle(Ang1);
             this.Segments[1].SetAngle(Ang2);

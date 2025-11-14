@@ -104,7 +104,7 @@ let canvas = document.querySelector('canvas');
                     ctx.beginPath();
                     ctx.setLineDash([10,10]);
                     let intersections = Arm.CheckIfPointIsInSideWorkingArea(0,null,null,LastPt.posx,LastPt.posy,e.clientX,e.clientY);
-    
+                    
                     if(intersections == 0){
                         PointStaysInside = true;
                         ctx.strokeStyle = "black";
